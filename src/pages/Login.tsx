@@ -104,6 +104,8 @@ export function Login() {
   const [lead, rest] = greeting(new Date().getHours());
 
   const notice = (location.state as { notice?: string } | null)?.notice;
+  // allauth sends a failed social sign-in back here as /login?socialLoginError=true.
+  const socialFailed = new URLSearchParams(location.search).has("socialLoginError");
 
   if (status === "authed") return <Navigate to={next} replace />;
 
@@ -144,6 +146,11 @@ export function Login() {
         {notice && (
           <p className="form-ok" role="status">
             {notice}
+          </p>
+        )}
+        {socialFailed && !error && (
+          <p className="form-err" role="alert">
+            That sign-in didn't go through. Try again, or use your email and password.
           </p>
         )}
 

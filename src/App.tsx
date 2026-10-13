@@ -50,6 +50,12 @@ function Home() {
   return <Navigate to={`/${first.slug}/issues`} replace />;
 }
 
+/** The classic app's social sign-in landing page; the sign-in form handles it here. */
+function FinalizeLogin() {
+  const { search } = useLocation();
+  return <Navigate to={`/login${search}`} replace />;
+}
+
 /** Backend alert and email links use the classic app's `/uptime-monitors/:id`. */
 function MonitorRedirect() {
   const { org = "", id = "" } = useParams();
@@ -66,6 +72,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/login/finalize" element={<FinalizeLogin />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
