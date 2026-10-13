@@ -67,6 +67,13 @@ export type EventEntry =
   | { type: "breadcrumbs"; data: { values: Breadcrumb[] } }
   | { type: string; data: unknown };
 
+export interface EventUser {
+  id?: string | null;
+  email?: string | null;
+  username?: string | null;
+  ip_address?: string | null;
+}
+
 export interface IssueEvent {
   id: string;
   eventID: string;
@@ -76,4 +83,7 @@ export interface IssueEvent {
   culprit?: string;
   tags: { key: string; value: string }[];
   entries: EventEntry[];
+  user?: EventUser | null;
+  previousEventID?: string | null;
+  nextEventID?: string | null;
 }

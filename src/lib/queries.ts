@@ -35,23 +35,25 @@ export interface IssueFilters {
   environment: string;
   project: string;
   period: "24h" | "14d";
+  sort: IssueSort;
 }
+
+export type IssueSort = "-last_seen" | "-first_seen" | "-count" | "-priority";
 
 export function useIssues(org: string, f: IssueFilters, search = "") {
   return useQuery({
     queryKey: ["issues", org, f, search],
     placeholderData: keepPreviousData,
     queryFn: async () => {
-      const days = f.period === "24h" ? 1 : 14;
+      // The period only picks which stats window is charted. The API's start/end
+      // filter on first_seen, so sending them would hide older, still-open issues.
       const { data, headers } = await apiRaw<Issue[]>(`/api/0/organizations/${org}/issues/`, {
         query: {
           query: [f.status === "all" ? "" : `is:${f.status}`, search].filter(Boolean).join(" "),
           environment: f.environment || undefined,
           project: f.project || undefined,
-          sort: "-last_seen",
+          sort: f.sort,
           limit: 50,
-          start: new Date(Date.now() - days * 86_400_000).toISOString(),
-          end: new Date().toISOString(),
         },
       });
       return { issues: data, total: Number(headers.get("x-hits") ?? data.length) };
@@ -66,10 +68,27 @@ export function useIssue(org: string, id: string) {
   });
 }
 
-export function useLatestEvent(id: string) {
+/** One event of an issue; without an id this is the most recent one. */
+export function useEvent(issueId: string, eventId?: string) {
   return useQuery({
-    queryKey: ["event", id],
-    queryFn: () => api<IssueEvent>(`/api/0/issues/${id}/events/latest/`),
+    queryKey: ["event", issueId, eventId ?? "latest"],
+    queryFn: () => api<IssueEvent>(`/api/0/issues/${issueId}/events/${eventId ?? "latest"}/`),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useBulkUpdateIssues(org: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, status }: { ids: string[]; status: IssueStatus }) =>
+      api(`/api/0/organizations/${org}/issues/?${ids.map((i) => `id=${encodeURIComponent(i)}`).join("&")}`, {
+        method: "PUT",
+        body: { status },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["issues", org] });
+      qc.invalidateQueries({ queryKey: ["issue", org] });
+    },
   });
 }
 

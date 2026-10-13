@@ -48,7 +48,7 @@ export function Pulse({ issues, period }: { issues: Issue[]; period: Period }) {
           return (
             <rect
               key={i}
-              className={v === 0 ? "flat" : hot ? "hot" : ""}
+              className={v === 0 ? "flat" : hot ? "hot" : "on"}
               x={i * w + 1}
               y={150 - h}
               width={w - 3}
@@ -67,20 +67,17 @@ export function Pulse({ issues, period }: { issues: Issue[]; period: Period }) {
   );
 }
 
-export function Sparkline({ points }: { points: [number, number][] }) {
-  if (points.length < 2) {
-    return (
-      <svg className="spark" viewBox="0 0 120 38" aria-hidden="true">
-        <polyline points="0,36 120,36" style={{ stroke: "var(--line)" }} />
-      </svg>
-    );
-  }
-  const max = Math.max(...points.map((p) => p[1]), 1);
-  const step = 120 / (points.length - 1);
-  const pts = points.map(([, v], i) => `${Math.round(i * step)},${(36 - (v / max) * 32).toFixed(1)}`);
+/** Per-issue trend as tiny bars, bucketed exactly like the main volume chart. */
+export function Sparkline({ issue, period }: { issue: Issue; period: Period }) {
+  const data = buckets([issue], period);
+  const max = Math.max(...data, 1);
+  const w = 120 / data.length;
   return (
-    <svg className="spark" viewBox="0 0 120 38" aria-hidden="true">
-      <polyline points={pts.join(" ")} />
+    <svg className="spark" viewBox="0 0 120 32" aria-hidden="true">
+      {data.map((v, i) => {
+        const h = v === 0 ? 2 : Math.max(4, (v / max) * 30);
+        return <rect key={i} className={v === 0 ? "flat" : "on"} x={i * w + 0.5} y={32 - h} width={Math.max(w - 1.5, 1)} height={h} rx="1" />;
+      })}
     </svg>
   );
 }

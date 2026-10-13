@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { timeAgo } from "../lib/format";
-import { useIssue, useLatestEvent, useUpdateIssueStatus } from "../lib/queries";
+import { useEvent, useIssue, useUpdateIssueStatus } from "../lib/queries";
 import type { Breadcrumb, EventEntry, ExceptionValue, IssueEvent, StackFrame } from "../lib/types";
 
 function Frame({ frame, culprit }: { frame: StackFrame; culprit: boolean }) {
@@ -11,7 +11,7 @@ function Frame({ frame, culprit }: { frame: StackFrame; culprit: boolean }) {
     <>
       <div className={`frame ${culprit ? "cul" : frame.inApp === false ? "sys" : ""}`}>
         <span className="fn">{frame.function ?? "<anonymous>"}()</span>
-        {culprit && <span className="badge">culprit</span>}
+        {culprit && <span className="tag new">culprit</span>}
         <span className="loc">{loc}</span>
       </div>
       {culprit && (frame.context?.length || frame.context_line) && (
@@ -30,26 +30,33 @@ function Frame({ frame, culprit }: { frame: StackFrame; culprit: boolean }) {
   );
 }
 
-function Trace({ value }: { value: ExceptionValue }) {
+function Exception({ value }: { value: ExceptionValue }) {
   // Sentry-style payloads list frames oldest-first, so the culprit is the last one.
   const frames = [...(value.stacktrace?.frames ?? [])].reverse();
   const [showAll, setShowAll] = useState(false);
-  if (frames.length === 0) return <p style={{ color: "var(--mute)" }}>No stack trace was sent with this event.</p>;
   const appFrames = frames.filter((f) => f.inApp !== false);
+  // The culprit is the innermost frame of the app's own code, not a library frame below it.
+  const culprit = appFrames[0] ?? frames[0];
   const shown = showAll || appFrames.length === 0 ? frames : appFrames;
   return (
-    <>
-      <div className="trace">
-        {shown.map((f, i) => (
-          <Frame key={i} frame={f} culprit={f === frames[0]} />
-        ))}
-      </div>
+    <div className="exc">
+      <div className="t">{value.type ?? "Error"}</div>
+      {value.value && <div className="v">{value.value}</div>}
+      {frames.length === 0 ? (
+        <p style={{ color: "var(--mute)", margin: "14px 0 16px" }}>No stack trace was sent with this event.</p>
+      ) : (
+        <div className="trace">
+          {shown.map((f, i) => (
+            <Frame key={i} frame={f} culprit={f === culprit} />
+          ))}
+        </div>
+      )}
       {appFrames.length > 0 && appFrames.length < frames.length && (
-        <button className="link-btn" onClick={() => setShowAll((s) => !s)}>
+        <button className="link-btn" style={{ margin: "0 0 16px" }} onClick={() => setShowAll((s) => !s)}>
           {showAll ? "Hide library frames" : `Show ${frames.length - appFrames.length} library frames`}
         </button>
       )}
-    </>
+    </div>
   );
 }
 
@@ -59,33 +66,35 @@ function entries<T extends EventEntry["type"]>(event: IssueEvent, type: T) {
 
 function Breadcrumbs({ crumbs, failedAt }: { crumbs: Breadcrumb[]; failedAt: string }) {
   return (
-    <div className="panel">
-      <div className="tl">
-        {crumbs.slice(-12).map((c, i) => (
-          <div key={i}>
-            {c.timestamp && <small>{new Date(c.timestamp).toLocaleTimeString()}</small>}
-            {[c.category, c.message].filter(Boolean).join(" · ") || c.type || "event"}
-          </div>
-        ))}
-        <div className="x">
-          <small>failure</small>
-          {failedAt}
+    <div className="tl">
+      {crumbs.slice(-12).map((c, i) => (
+        <div key={i}>
+          {c.timestamp && <small>{new Date(c.timestamp).toLocaleTimeString()}</small>}
+          {[c.category, c.message].filter(Boolean).join(" · ") || c.type || "event"}
         </div>
+      ))}
+      <div className="x">
+        <small>failure</small>
+        {failedAt}
       </div>
     </div>
   );
 }
 
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export function IssueDetail() {
   const { org = "", id = "" } = useParams();
+  const [params, setParams] = useSearchParams();
+  const eventParam = params.get("event") ?? undefined;
   const issue = useIssue(org, id);
-  const event = useLatestEvent(id);
+  const event = useEvent(id, eventParam);
   const update = useUpdateIssueStatus(org, id);
 
   if (issue.isLoading) {
     return (
       <div className="wrap" aria-busy="true">
-        <div className="skel" style={{ width: "50%", height: 46 }} />
+        <div className="skel" style={{ width: "40%", height: 34 }} />
       </div>
     );
   }
@@ -100,24 +109,44 @@ export function IssueDetail() {
   }
 
   const it = issue.data;
-  const exceptions = event.data
-    ? (entries(event.data, "exception") as { data: { values: ExceptionValue[] } }[]).flatMap((e) => e.data.values)
+  const ev = event.data;
+  const exceptions = ev
+    ? (entries(ev, "exception") as { data: { values: ExceptionValue[] } }[]).flatMap((e) => e.data.values)
     : [];
-  const crumbs = event.data
-    ? (entries(event.data, "breadcrumbs") as { data: { values: Breadcrumb[] } }[]).flatMap((e) => e.data.values)
+  const crumbs = ev
+    ? (entries(ev, "breadcrumbs") as { data: { values: Breadcrumb[] } }[]).flatMap((e) => e.data.values)
     : [];
-  const tag = (key: string) => event.data?.tags.find((t) => t.key === key)?.value;
+  const tag = (key: string) => ev?.tags.find((t) => t.key === key)?.value;
   const resolved = it.status === "resolved";
+  const release = tag("release") ?? it.lastRelease?.version;
+  const sev = resolved ? "done" : it.level === "warning" ? "wrn" : "err";
+  const goTo = (eventId: string | null | undefined) => {
+    const next = new URLSearchParams(params);
+    if (eventId) next.set("event", eventId);
+    else next.delete("event");
+    setParams(next);
+  };
+  const user = ev?.user;
+  const userLabel = user?.email ?? user?.username ?? user?.id ?? user?.ip_address;
+  const otherTags = ev?.tags.filter((t) => !["release", "environment"].includes(t.key)) ?? [];
 
   return (
     <div className="wrap">
       <div className="crumb">
         <Link to={`/${org}/issues`}>Issues</Link> / {it.shortId}
       </div>
+
       <div className="dh">
         <div>
+          <div className="top">
+            <span className={`dot ${sev}`} />
+            <span>{cap(it.level)}</span>
+            <span className="sid">{it.shortId}</span>
+            <span className={`tag ${resolved ? "ok" : it.status === "unresolved" ? "new" : ""}`}>{cap(it.status)}</span>
+          </div>
           <h1>{it.metadata.type ?? it.title}</h1>
-          <p>{it.metadata.value ?? ""}</p>
+          {it.metadata.value && <p>{it.metadata.value}</p>}
+          {it.culprit && <div className="where">{it.culprit}</div>}
         </div>
         <div className="acts">
           <button
@@ -142,45 +171,98 @@ export function IssueDetail() {
         </div>
       )}
 
+      <div className="strip card">
+        <div>
+          <span className="eyebrow">Events</span>
+          <b>{it.count}</b>
+        </div>
+        <div>
+          <span className="eyebrow">First seen</span>
+          <b>{timeAgo(it.firstSeen)}</b>
+        </div>
+        <div>
+          <span className="eyebrow">Last seen</span>
+          <b>{timeAgo(it.lastSeen)}</b>
+        </div>
+        <div>
+          <span className="eyebrow">Latest release</span>
+          <b className="mono" style={{ fontSize: 15 }}>{release ?? "—"}</b>
+        </div>
+      </div>
+
       <div className="cols">
         <div>
-          <h3 className="sec">Where it broke</h3>
-          {event.isLoading ? (
-            <div className="skel" style={{ height: 120 }} />
-          ) : exceptions.length === 0 ? (
-            <p style={{ color: "var(--mute)" }}>{event.data?.message ?? "No exception details for this event."}</p>
-          ) : (
-            exceptions.map((ex, i) => <Trace key={i} value={ex} />)
-          )}
+          <h3 className="sec">Event</h3>
+          <div className="card" style={{ marginBottom: 24 }}>
+            <div className="evhead">
+              <div>
+                <span className="id">{ev ? ev.eventID.slice(0, 8) : "…"}</span>
+                {ev && <span className="when">{timeAgo(ev.dateCreated)}</span>}
+              </div>
+              <div className="evnav">
+                <button disabled={!ev?.previousEventID} onClick={() => goTo(ev?.previousEventID)}>
+                  ← Older
+                </button>
+                <button disabled={!ev?.nextEventID} onClick={() => goTo(ev?.nextEventID)}>
+                  Newer →
+                </button>
+                {eventParam && <button onClick={() => goTo(null)}>Latest</button>}
+              </div>
+            </div>
+            {event.isLoading ? (
+              <div style={{ padding: 16 }}>
+                <div className="skel" style={{ height: 96 }} />
+              </div>
+            ) : exceptions.length === 0 ? (
+              <p style={{ color: "var(--mute)", padding: 16 }}>
+                {ev?.message ?? "No exception details for this event."}
+              </p>
+            ) : (
+              exceptions.map((ex, i) => <Exception key={i} value={ex} />)
+            )}
+          </div>
 
           {crumbs.length > 0 && (
             <>
-              <h3 className="sec" style={{ marginTop: 34 }}>
-                What led up to it
-              </h3>
-              <Breadcrumbs crumbs={crumbs} failedAt={`${it.metadata.type ?? "Error"} raised`} />
+              <h3 className="sec">Breadcrumbs</h3>
+              <div className="card">
+                <Breadcrumbs crumbs={crumbs} failedAt={`${it.metadata.type ?? "Error"} raised`} />
+              </div>
             </>
           )}
         </div>
+
         <aside>
-          <div className="panel">
-            <h3 className="sec">At a glance</h3>
-            <div className="kv"><span>Events</span><b>{it.count}</b></div>
-            <div className="kv"><span>Users hit</span><b>{it.userCount}</b></div>
-            <div className="kv"><span>First seen</span><b>{timeAgo(it.firstSeen)}</b></div>
-            <div className="kv"><span>Last seen</span><b>{timeAgo(it.lastSeen)}</b></div>
-            <div className="kv"><span>Status</span><b className={`st-${it.status}`}>{it.status[0].toUpperCase() + it.status.slice(1)}</b></div>
-          </div>
-          <div className="panel">
-            <h3 className="sec">Context</h3>
+          <div className="card panel">
+            <h3 className="sec">Details</h3>
             <div className="kv"><span>Project</span><b>{it.project.name}</b></div>
             {tag("environment") && <div className="kv"><span>Environment</span><b>{tag("environment")}</b></div>}
-            {(tag("release") ?? it.lastRelease?.version) && (
-              <div className="kv"><span>Release</span><b className="mono" style={{ fontSize: 13 }}>{tag("release") ?? it.lastRelease?.version}</b></div>
-            )}
-            {event.data?.platform && <div className="kv"><span>Platform</span><b>{event.data.platform}</b></div>}
-            {it.logger && <div className="kv"><span>Logger</span><b className="mono" style={{ fontSize: 13 }}>{it.logger}</b></div>}
+            {release && <div className="kv"><span>Release</span><b className="mono">{release}</b></div>}
+            {ev?.platform && <div className="kv"><span>Platform</span><b>{ev.platform}</b></div>}
+            {it.logger && <div className="kv"><span>Logger</span><b className="mono">{it.logger}</b></div>}
           </div>
+
+          {userLabel && (
+            <div className="card panel">
+              <h3 className="sec">User</h3>
+              {user?.email && <div className="kv"><span>Email</span><b>{user.email}</b></div>}
+              {user?.id && <div className="kv"><span>ID</span><b className="mono">{user.id}</b></div>}
+              {user?.username && <div className="kv"><span>Username</span><b>{user.username}</b></div>}
+              {user?.ip_address && <div className="kv"><span>IP</span><b className="mono">{user.ip_address}</b></div>}
+            </div>
+          )}
+
+          {otherTags.length > 0 && (
+            <div className="card panel">
+              <h3 className="sec">Tags</h3>
+              {otherTags.map((t) => (
+                <div className="kv" key={t.key}>
+                  <span>{t.key}</span>
+                  <b className="mono">{t.value}</b>
+                </div>
+              ))}
+            </div>
+          )}
         </aside>
       </div>
     </div>
