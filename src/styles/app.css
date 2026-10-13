@@ -510,7 +510,7 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .live.on .livedot { background: var(--ok); animation: livepulse 1.4s ease-in-out infinite; }
 @keyframes livepulse { 50% { opacity: .25; } }
 .pill button { margin-left: 4px; color: inherit; font-size: 11px; }
-.lhead { display: flex; justify-content: space-between; height: 40px; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--paper); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.loghead { display: flex; justify-content: space-between; height: 40px; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--paper); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
 .lday { padding: 7px 20px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); background: var(--paper); border-bottom: 1px solid var(--line2); }
 .lrow { display: grid; grid-template-columns: 104px 52px 150px minmax(0, 1fr); gap: 14px; align-items: baseline; width: 100%; text-align: left; padding: 8px 20px; border-bottom: 1px solid var(--line2); font-size: 13px; }
 .lrow:hover { background: var(--line2); }
@@ -535,7 +535,7 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
   .lrow .lbody { grid-column: 1 / -1; }
   .ldetail { padding: 6px 16px 16px; }
   .lkv { grid-template-columns: 90px minmax(0, 1fr); }
-  .lhead, .lday { padding-left: 16px; padding-right: 16px; }
+  .loghead, .lday { padding-left: 16px; padding-right: 16px; }
 }
 .toolbar .search { order: 0; flex: 1 1 240px; min-width: 0; padding-right: 12px; background-image: none; cursor: text; }
 

@@ -355,7 +355,7 @@ export function Logs() {
         </div>
       ) : (
         <div className={`table card ${logsQ.isPlaceholderData ? "stale" : ""}`}>
-          <div className="lhead">
+          <div className="loghead">
             <span>
               {hits >= MAX_HITS ? `${MAX_HITS.toLocaleString()}+` : hits.toLocaleString()} {hits === 1 ? "log" : "logs"}
               {logs.length < hits ? ` · showing ${logs.length}` : ""}
