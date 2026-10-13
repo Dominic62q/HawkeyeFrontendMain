@@ -2,7 +2,6 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Shell } from "./components/Shell";
 import { useAuth } from "./lib/auth";
 import { useOrganizations } from "./lib/queries";
-import { ComingSoon } from "./pages/ComingSoon";
 import { IssueDetail } from "./pages/IssueDetail";
 import { Issues } from "./pages/Issues";
 import { Logs } from "./pages/Logs";
@@ -98,7 +97,7 @@ export function App() {
           <Route path="security" element={<Security />} />
           <Route path="tokens" element={<Tokens />} />
         </Route>
-        <Route path=":section" element={<ComingSoon />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

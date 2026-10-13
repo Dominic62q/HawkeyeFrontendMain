@@ -11,7 +11,6 @@ const TABS = [
   ["uptime", "Uptime"],
   ["performance", "Performance"],
   ["logs", "Logs"],
-  ["releases", "Releases"],
   ["settings", "Settings"],
 ] as const;
 
