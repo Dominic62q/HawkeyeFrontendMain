@@ -5,6 +5,7 @@ import { useOrganizations } from "./lib/queries";
 import { ComingSoon } from "./pages/ComingSoon";
 import { IssueDetail } from "./pages/IssueDetail";
 import { Issues } from "./pages/Issues";
+import { Logs } from "./pages/Logs";
 import { AcceptInvite } from "./pages/AcceptInvite";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Login } from "./pages/Login";
@@ -79,6 +80,7 @@ export function App() {
         <Route path="issues/:id" element={<IssueDetail />} />
         <Route path="uptime" element={<Uptime />} />
         <Route path="uptime/:id" element={<MonitorDetail />} />
+        <Route path="logs" element={<Logs />} />
         <Route path="performance" element={<Performance />} />
         <Route path="performance/:id" element={<TransactionDetail />} />
         <Route path="settings" element={<SettingsLayout />}>

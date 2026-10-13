@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, NavLink, Outlet, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/format";
-import { useOrganizations, useProjects } from "../lib/queries";
+import { useOrganizations, useProjects, useSettings } from "../lib/queries";
 import { useTheme } from "../lib/theme";
 import { Logo } from "./Logo";
 
@@ -20,9 +20,11 @@ export function Shell() {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [params] = useSearchParams();
   const orgs = useOrganizations();
   const projects = useProjects(org);
+  const features = useSettings().data?.enabledFeatures;
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState(params.get("q") ?? "");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -59,7 +61,8 @@ export function Shell() {
     const next = new URLSearchParams(params);
     if (id) next.set("project", id);
     else next.delete("project");
-    navigate(`/${org}/issues?${next}`);
+    // Stay on the Logs page when switching project there; everything else lands on Issues.
+    navigate(`/${org}/${location.pathname.endsWith("/logs") ? "logs" : "issues"}?${next}`);
   };
 
   return (
@@ -134,7 +137,8 @@ export function Shell() {
         </div>
       </header>
       <nav className="tabs" aria-label="Sections">
-        {TABS.map(([slug, label]) => (
+        {/* Logs and Uptime only exist when the server has them switched on. */}
+        {TABS.filter(([slug]) => !(slug === "logs" || slug === "uptime") || !features || features.includes(slug)).map(([slug, label]) => (
           <NavLink key={slug} to={`/${org}/${slug}`} className={({ isActive }) => (isActive ? "on" : "")}>
             {label}
           </NavLink>
