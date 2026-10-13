@@ -85,8 +85,14 @@ Other Sentry SDKs work the same way. The snippets live in [`src/lib/sdk.ts`](src
 `GLITCHTIP_URL` setting. If your DSN says `localhost`, only apps on the same machine can report in.
 To monitor apps elsewhere, run the backend on a public address and set `GLITCHTIP_URL` to it.
 
-Logs use OpenTelemetry (OTLP) instead of a Sentry SDK, sending to the backend's `/v1/logs` endpoint
-with the project key.
+**Performance data** uses the same SDK and DSN. Tracing is off by default, so set the SDK's
+`tracesSampleRate` (for example `1.0`, or `0.1` to sample a tenth of requests) to send transactions.
+
+**Logs** can arrive two ways, and both need `GLITCHTIP_ENABLE_LOGS` on the backend (the default):
+
+- Through the Sentry SDK, with its logging option turned on. Logs travel in the same request as errors.
+- Through an OpenTelemetry (OTLP) exporter, sending to the backend's `/v1/logs` endpoint with the
+  project key in an `Authorization: Bearer <key>` header.
 
 ## Project layout
 
