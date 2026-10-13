@@ -5,6 +5,9 @@ import type {
   Issue,
   IssueEvent,
   IssueStatus,
+  Monitor,
+  MonitorCheck,
+  MonitorInput,
   Organization,
   Project,
 } from "./types";
@@ -100,6 +103,67 @@ export function useUpdateIssueStatus(org: string, id: string) {
     onSuccess: (issue) => {
       qc.setQueryData(["issue", org, id], issue);
       qc.invalidateQueries({ queryKey: ["issues", org] });
+    },
+  });
+}
+
+export type MonitorSort = "status" | "name" | "-created";
+
+const LIVE = 15_000;
+
+/** Monitors with their 60 most recent checks; refreshes on its own like a status board should. */
+export function useMonitors(org: string, sort: MonitorSort) {
+  return useQuery({
+    queryKey: ["monitors", org, sort],
+    queryFn: () => api<Monitor[]>(`/api/0/organizations/${org}/monitors/`, { query: { sort, limit: 100 } }),
+    refetchInterval: LIVE,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useMonitor(org: string, id: string) {
+  return useQuery({
+    queryKey: ["monitor", org, id],
+    queryFn: () => api<Monitor>(`/api/0/organizations/${org}/monitors/${id}/`),
+    refetchInterval: LIVE,
+  });
+}
+
+/** Up/down transitions only, newest first. */
+export function useMonitorChanges(org: string, id: string) {
+  return useQuery({
+    queryKey: ["monitor-changes", org, id],
+    queryFn: () =>
+      api<MonitorCheck[]>(`/api/0/organizations/${org}/monitors/${id}/checks/`, {
+        query: { is_change: true, limit: 50 },
+      }),
+    refetchInterval: LIVE,
+  });
+}
+
+export function useSaveMonitor(org: string, id?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: MonitorInput) =>
+      api<Monitor>(`/api/0/organizations/${org}/monitors/${id ? id + "/" : ""}`, {
+        method: id ? "PUT" : "POST",
+        body: input,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["monitors", org] });
+      qc.invalidateQueries({ queryKey: ["monitor", org] });
+    },
+  });
+}
+
+export function useDeleteMonitor(org: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/api/0/organizations/${org}/monitors/${id}/`, { method: "DELETE" }),
+    onSuccess: (_, id) => {
+      // Drop it from the cached lists now so the list doesn't flash the deleted row.
+      qc.setQueriesData<Monitor[]>({ queryKey: ["monitors", org] }, (old) => old?.filter((m) => m.id !== id));
+      qc.invalidateQueries({ queryKey: ["monitors", org] });
     },
   });
 }

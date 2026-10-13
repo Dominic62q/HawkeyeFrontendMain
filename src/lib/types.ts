@@ -87,3 +87,48 @@ export interface IssueEvent {
   previousEventID?: string | null;
   nextEventID?: string | null;
 }
+
+export type MonitorType = "Ping" | "GET" | "POST" | "TCP Port" | "SSL" | "Heartbeat";
+
+export interface MonitorCheck {
+  startCheck: string;
+  isUp: boolean;
+  reason: number | null;
+  /** Only present on the detail and checks endpoints. */
+  responseTime?: number | null;
+}
+
+export interface Monitor {
+  id: string;
+  name: string;
+  monitorType: MonitorType;
+  url: string;
+  interval: number;
+  timeout: number | null;
+  expectedStatus: number | null;
+  expectedBody: string;
+  confirmationThreshold: number;
+  created: string;
+  /** null until the first check has run. */
+  isUp: boolean | null;
+  lastChange: string | null;
+  heartbeatEndpoint: string | null;
+  projectID: string | null;
+  projectName: string | null;
+  environmentID: number | null;
+  /** Newest first. */
+  checks: MonitorCheck[];
+}
+
+export interface MonitorInput {
+  name: string;
+  monitorType: MonitorType;
+  url: string;
+  interval: number;
+  timeout: number | null;
+  expectedStatus: number | null;
+  expectedBody: string;
+  confirmationThreshold: number;
+  project: string | null;
+  environmentId: number | null;
+}

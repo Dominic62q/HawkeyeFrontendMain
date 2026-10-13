@@ -71,6 +71,14 @@ export function errorMessage(err: unknown): string {
     const first = body?.errors?.[0]?.message;
     if (first) return first;
     if (typeof body?.detail === "string") return body.detail;
+    // django-ninja validation errors: [{ loc: [...], msg: "..." }]
+    if (Array.isArray(body?.detail)) {
+      const msgs = (body.detail as { msg?: string; message?: string }[])
+        .map((d) => d.msg ?? d.message)
+        .filter(Boolean)
+        .map((m) => String(m).replace(/^Value error, /, ""));
+      if (msgs.length) return msgs.join(". ");
+    }
   }
   return "Something went wrong. Try again.";
 }

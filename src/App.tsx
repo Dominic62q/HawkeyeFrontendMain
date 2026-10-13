@@ -6,6 +6,8 @@ import { ComingSoon } from "./pages/ComingSoon";
 import { IssueDetail } from "./pages/IssueDetail";
 import { Issues } from "./pages/Issues";
 import { Login } from "./pages/Login";
+import { MonitorDetail } from "./pages/MonitorDetail";
+import { Uptime } from "./pages/Uptime";
 
 function Splash({ children = "Loading…" }: { children?: string }) {
   return <div className="splash">{children}</div>;
@@ -52,6 +54,8 @@ export function App() {
         <Route index element={<Navigate to="issues" replace />} />
         <Route path="issues" element={<Issues />} />
         <Route path="issues/:id" element={<IssueDetail />} />
+        <Route path="uptime" element={<Uptime />} />
+        <Route path="uptime/:id" element={<MonitorDetail />} />
         <Route path=":section" element={<ComingSoon />} />
       </Route>
     </Routes>
