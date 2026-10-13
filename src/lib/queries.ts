@@ -2,6 +2,14 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { api, apiRaw } from "./api";
 import type {
   Environment,
+  Member,
+  MemberInvite,
+  OrganizationDetail,
+  OrgRole,
+  ProjectAlert,
+  ProjectDetail,
+  ProjectKey,
+  Team,
   Issue,
   IssueEvent,
   IssueStatus,
@@ -202,5 +210,178 @@ export function useTransactionSpans(org: string, id: string) {
   return useQuery({
     queryKey: ["transaction-spans", org, id],
     queryFn: () => api<SpanGroup[]>(`/api/0/organizations/${org}/transaction-groups/${id}/spans/`),
+  });
+}
+
+/* ---- settings ---- */
+
+export function useOrgDetail(org: string) {
+  return useQuery({
+    queryKey: ["org-detail", org],
+    queryFn: () => api<OrganizationDetail>(`/api/0/organizations/${org}/`),
+  });
+}
+
+/** Everything under settings that can change what the org looks like. */
+function useRefreshOrg(org: string) {
+  const qc = useQueryClient();
+  return () => {
+    for (const key of ["org-detail", "org-projects", "teams", "projects", "organizations"]) {
+      qc.invalidateQueries({ queryKey: [key] });
+    }
+    void org;
+  };
+}
+
+export function useUpdateOrg(org: string) {
+  const qc = useQueryClient();
+  const refresh = useRefreshOrg(org);
+  return useMutation({
+    mutationFn: (input: { name: string }) =>
+      api<OrganizationDetail>(`/api/0/organizations/${org}/`, { method: "PUT", body: input }),
+    onSuccess: (saved) => {
+      // Show the saved name right away instead of waiting on the refetch.
+      qc.setQueryData<OrganizationDetail>(["org-detail", org], saved);
+      refresh();
+    },
+  });
+}
+
+export function useOrgProjects(org: string) {
+  return useQuery({
+    queryKey: ["org-projects", org],
+    queryFn: () => api<ProjectDetail[]>(`/api/0/organizations/${org}/projects/`),
+  });
+}
+
+export interface ProjectInput {
+  name: string;
+  platform?: string | null;
+}
+
+export function useCreateProject(org: string) {
+  const refresh = useRefreshOrg(org);
+  return useMutation({
+    mutationFn: ({ team, ...input }: ProjectInput & { team: string }) =>
+      api<ProjectDetail>(`/api/0/teams/${org}/${team}/projects/`, { method: "POST", body: input }),
+    onSuccess: refresh,
+  });
+}
+
+export function useUpdateProject(org: string, slug: string) {
+  const qc = useQueryClient();
+  const refresh = useRefreshOrg(org);
+  return useMutation({
+    mutationFn: (input: ProjectInput) =>
+      api<ProjectDetail>(`/api/0/projects/${org}/${slug}/`, { method: "PUT", body: input }),
+    onSuccess: (saved) => {
+      qc.setQueryData<ProjectDetail[]>(["org-projects", org], (old) =>
+        old?.map((p) => (p.slug === slug ? { ...p, name: saved.name, platform: saved.platform } : p)),
+      );
+      refresh();
+    },
+  });
+}
+
+export function useDeleteProject(org: string, slug: string) {
+  const qc = useQueryClient();
+  const refresh = useRefreshOrg(org);
+  return useMutation({
+    mutationFn: () => api(`/api/0/projects/${org}/${slug}/`, { method: "DELETE" }),
+    onSuccess: () => {
+      // The org endpoint keeps listing a deleted project until cleanup runs, so patch the list we read instead.
+      qc.setQueryData<ProjectDetail[]>(["org-projects", org], (old) => old?.filter((p) => p.slug !== slug));
+      refresh();
+    },
+  });
+}
+
+export function useProjectKeys(org: string, slug: string) {
+  return useQuery({
+    queryKey: ["keys", org, slug],
+    queryFn: () => api<ProjectKey[]>(`/api/0/projects/${org}/${slug}/keys/`),
+  });
+}
+
+export function useCreateKey(org: string, slug: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) =>
+      api<ProjectKey>(`/api/0/projects/${org}/${slug}/keys/`, { method: "POST", body: { name } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["keys", org, slug] }),
+  });
+}
+
+export function useDeleteKey(org: string, slug: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/api/0/projects/${org}/${slug}/keys/${id}/`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["keys", org, slug] }),
+  });
+}
+
+export function useTeams(org: string) {
+  return useQuery({
+    queryKey: ["teams", org],
+    queryFn: () => api<Team[]>(`/api/0/organizations/${org}/teams/`),
+  });
+}
+
+export function useCreateTeam(org: string) {
+  const refresh = useRefreshOrg(org);
+  return useMutation({
+    mutationFn: (slug: string) => api<Team>(`/api/0/organizations/${org}/teams/`, { method: "POST", body: { slug } }),
+    onSuccess: refresh,
+  });
+}
+
+export function useDeleteTeam(org: string) {
+  const refresh = useRefreshOrg(org);
+  return useMutation({
+    mutationFn: (slug: string) => api(`/api/0/teams/${org}/${slug}/`, { method: "DELETE" }),
+    onSuccess: refresh,
+  });
+}
+
+export function useMembers(org: string) {
+  return useQuery({
+    queryKey: ["members", org],
+    queryFn: () => api<Member[]>(`/api/0/organizations/${org}/members/`),
+  });
+}
+
+export function useInviteMember(org: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { email: string; orgRole: OrgRole }) =>
+      api<MemberInvite>(`/api/0/organizations/${org}/members/`, {
+        method: "POST",
+        body: { ...input, teamRoles: [], sendInvite: true, reinvite: true },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["members", org] }),
+  });
+}
+
+export function useUpdateMember(org: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, orgRole }: { id: string; orgRole: OrgRole }) =>
+      api<Member>(`/api/0/organizations/${org}/members/${id}/`, { method: "PUT", body: { orgRole, teamRoles: [] } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["members", org] }),
+  });
+}
+
+export function useRemoveMember(org: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/api/0/organizations/${org}/members/${id}/`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["members", org] }),
+  });
+}
+
+export function useAlerts(org: string, slug: string) {
+  return useQuery({
+    queryKey: ["alerts", org, slug],
+    queryFn: () => api<ProjectAlert[]>(`/api/0/projects/${org}/${slug}/alerts/`),
   });
 }

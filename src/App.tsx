@@ -10,6 +10,10 @@ import { MonitorDetail } from "./pages/MonitorDetail";
 import { Performance } from "./pages/Performance";
 import { TransactionDetail } from "./pages/TransactionDetail";
 import { Uptime } from "./pages/Uptime";
+import { General } from "./pages/settings/General";
+import { ProjectSettings } from "./pages/settings/ProjectSettings";
+import { Projects } from "./pages/settings/Projects";
+import { SettingsLayout } from "./pages/settings/SettingsLayout";
 
 function Splash({ children = "Loading…" }: { children?: string }) {
   return <div className="splash">{children}</div>;
@@ -60,6 +64,12 @@ export function App() {
         <Route path="uptime/:id" element={<MonitorDetail />} />
         <Route path="performance" element={<Performance />} />
         <Route path="performance/:id" element={<TransactionDetail />} />
+        <Route path="settings" element={<SettingsLayout />}>
+          <Route index element={<Navigate to="general" replace />} />
+          <Route path="general" element={<General />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="projects/:slug" element={<ProjectSettings />} />
+        </Route>
         <Route path=":section" element={<ComingSoon />} />
       </Route>
     </Routes>

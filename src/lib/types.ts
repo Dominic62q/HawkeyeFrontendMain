@@ -166,3 +166,88 @@ export interface TransactionTrendPoint {
   avgDuration: number;
   totalTime: number;
 }
+
+export interface TeamRef {
+  id: string;
+  slug: string;
+}
+
+export interface Team extends TeamRef {
+  dateCreated: string;
+  isMember: boolean;
+  memberCount: number;
+  projects?: Project[];
+}
+
+export interface ProjectDetail extends Project {
+  platform: string | null;
+  dateCreated: string;
+  firstEvent: string | null;
+  scrubIPAddresses: boolean;
+  teams: TeamRef[];
+}
+
+export interface OrganizationDetail extends Organization {
+  dateCreated: string;
+  isAcceptingEvents: boolean;
+  openMembership: boolean;
+  access: string[];
+  teams: Team[];
+  projects: ProjectDetail[];
+}
+
+export interface ProjectKey {
+  id: string;
+  label: string | null;
+  name: string;
+  dateCreated: string;
+  dsn: { public: string; secret: string; security: string };
+  rateLimit: { window: number; count: number } | null;
+  projectID: number;
+}
+
+export type OrgRole = "member" | "admin" | "manager" | "owner";
+
+export interface Member {
+  id: string;
+  role: OrgRole;
+  roleName: string;
+  dateCreated: string;
+  email: string;
+  pending: boolean;
+  isOwner: boolean;
+  user: { id: string; name: string; email: string; lastLogin: string | null } | null;
+}
+
+export interface MemberInvite extends Member {
+  inviteLink?: string | null;
+}
+
+export type RecipientType =
+  | "email"
+  | "webhook"
+  | "slack"
+  | "discord"
+  | "googlechat"
+  | "teams"
+  | "feishu"
+  | "ntfy"
+  | "zulip";
+
+export interface AlertRecipient {
+  id: number;
+  recipientType: string;
+  url: string;
+  config: Record<string, unknown> | null;
+  tagsToAdd: string[] | null;
+}
+
+export interface ProjectAlert {
+  id: number;
+  name: string;
+  timespanMinutes: number | null;
+  quantity: number | null;
+  uptime: boolean;
+  environments: string[];
+  alertRecipients: AlertRecipient[];
+}
