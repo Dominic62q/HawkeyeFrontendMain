@@ -2,6 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { api, apiRaw } from "./api";
 import type {
   Environment,
+  InviteInfo,
+  ServerSettings,
   Member,
   MemberInvite,
   OrganizationDetail,
@@ -428,5 +430,39 @@ export function useTestAlert(org: string, slug: string) {
   return useMutation({
     mutationFn: (id: number) =>
       api<AlertTestResult[]>(`/api/0/projects/${org}/${slug}/alerts/${id}/test/`, { method: "POST" }),
+  });
+}
+
+/** Public server settings: whether signup is open, which social logins exist, whether email works. */
+export function useSettings() {
+  return useQuery({
+    queryKey: ["server-settings"],
+    queryFn: () => api<ServerSettings>("/api/settings/"),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useInvite(orgUserId: string, token: string) {
+  return useQuery({
+    queryKey: ["invite", orgUserId, token],
+    queryFn: () => api<InviteInfo>(`/api/0/accept/${orgUserId}/${token}/`),
+    retry: false,
+  });
+}
+
+export function useAcceptInvite(orgUserId: string, token: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      api<InviteInfo>(`/api/0/accept/${orgUserId}/${token}/`, { method: "POST", body: { acceptInvite: true } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["organizations"] }),
+  });
+}
+
+export function useCreateOrganization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => api<Organization>("/api/0/organizations/", { method: "POST", body: { name } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["organizations"] }),
   });
 }

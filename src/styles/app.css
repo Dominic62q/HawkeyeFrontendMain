@@ -233,6 +233,27 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .login .go:disabled { opacity: .6; cursor: wait; }
 .login .form-err { margin-top: 20px; color: var(--signal); font-size: 14px; }
 
+/* other auth screens share the login layout */
+.lform { width: 100%; max-width: 400px; }
+.lsub { margin: -18px 0 8px; max-width: 38ch; font-size: 16px; line-height: 1.5; color: var(--mute); }
+.lsub b { color: var(--ink); font-weight: 600; }
+.lalt { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 22px; font-size: 14px; color: var(--mute); }
+.lalt a, .llink { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; transition: text-decoration-color .15s, color .15s; }
+.lalt a:hover, .llink:hover { color: var(--signal); text-decoration-color: var(--signal); }
+.llink { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+.login a.go { text-decoration: none; margin-top: 32px; }
+.login .form-ok { margin: -20px 0 8px; color: var(--ok); font-size: 14px; }
+.login .ferr { margin-top: 8px; color: var(--signal); font-size: 13px; }
+.login .fhint { margin-top: 8px; color: var(--mute); font-size: 13px; }
+.login input[aria-invalid="true"] { border-bottom-color: var(--signal); }
+.login .lcode { font-family: var(--mono); font-size: 28px; letter-spacing: .18em; }
+.social { margin-top: 32px; display: grid; gap: 10px; }
+.social-or { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.social-or::before, .social-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.social button { padding: 13px 18px; border: 1.5px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; transition: background .15s, color .15s; }
+.social button:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+.social button:disabled { opacity: .6; cursor: wait; }
+
 /* the watching eye */
 .watcher { position: absolute; z-index: 0; right: -9vw; top: 50%; width: min(66vw, 1000px); transform: translateY(-50%); overflow: visible; }
 .watcher .lidwrap { transform-box: fill-box; transform-origin: center; animation: blink 7s infinite; transition: transform .35s cubic-bezier(.5, 0, .2, 1); }

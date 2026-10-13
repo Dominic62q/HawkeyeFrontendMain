@@ -251,3 +251,23 @@ export interface ProjectAlert {
   environments: string[];
   alertRecipients: AlertRecipient[];
 }
+
+export interface SocialApp {
+  name: string;
+  provider: string;
+  brand?: string;
+}
+
+export interface ServerSettings {
+  socialApps: SocialApp[];
+  enableUserRegistration: boolean;
+  enableSocialAppsUserRegistration: boolean;
+  enableOrganizationCreation: boolean;
+  enabledFeatures: string[];
+  glitchtipInstanceName: string | null;
+}
+
+export interface InviteInfo {
+  acceptInvite: boolean;
+  orgUser: { id: string; email: string | null; organization: Organization };
+}

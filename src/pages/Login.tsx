@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { Logo } from "../components/Logo";
+import { useState, type FormEvent } from "react";
+import { Link, Navigate, useLocation } from "react-router-dom";
+import { AuthFrame } from "../components/AuthFrame";
+import { SocialButtons } from "../components/SocialButtons";
 import { MfaRequiredError, useAuth } from "../lib/auth";
 import { errorMessage } from "../lib/api";
-
-const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+import { useSettings } from "../lib/queries";
+import { useNext } from "../lib/useNext";
 
 function greeting(hour: number): [string, string] {
   if (hour < 5) return ["Still up?", "Let's see what broke."];
@@ -13,74 +14,100 @@ function greeting(hour: number): [string, string] {
   return ["Evening.", "Let's see what broke today."];
 }
 
-/**
- * A wall-sized eye. The pupil follows the pointer, it blinks now and then,
- * and it shuts while a password is being typed.
- */
-function WatchingEye({ shut, wince }: { shut: boolean; wince: boolean }) {
-  const ref = useRef<SVGSVGElement>(null);
-  const pupil = useRef<SVGGElement>(null);
+/** Lengths allauth accepts: 6 digit TOTP code, 8 character or 16 character recovery code. */
+const CODE_LENGTHS = [6, 8, 16];
 
-  useEffect(() => {
-    if (window.matchMedia(REDUCED_MOTION).matches) return;
-    const look = (e: PointerEvent) => {
-      const box = ref.current?.getBoundingClientRect();
-      if (!box || !pupil.current) return;
-      const dx = (e.clientX - (box.left + box.width / 2)) / box.width;
-      const dy = (e.clientY - (box.top + box.height / 2)) / box.height;
-      const x = Math.max(-1, Math.min(1, dx * 3)) * 30;
-      const y = Math.max(-1, Math.min(1, dy * 3)) * 12;
-      pupil.current.style.transform = `translate(${x}px, ${y}px)`;
-    };
-    window.addEventListener("pointermove", look);
-    return () => window.removeEventListener("pointermove", look);
-  }, []);
+function SecondFactor({ types, onBack }: { types: string[]; onBack: () => void }) {
+  const { verifyMfa } = useAuth();
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const usable = types.length === 0 || types.some((t) => t === "totp" || t === "recovery_codes");
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const clean = code.replace(/\s+/g, "");
+    if (!CODE_LENGTHS.includes(clean.length)) {
+      setError("Enter the 6 digit code from your authenticator app, or a recovery code.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await verifyMfa(clean);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <svg
-      ref={ref}
-      className={`watcher ${shut ? "shut" : ""} ${wince ? "wince" : ""}`}
-      viewBox="0 0 200 100"
-      aria-hidden="true"
-    >
-      <defs>
-        <clipPath id="lids">
-          <path d="M4 50C44 6 76 4 100 4C124 4 156 6 196 50C156 94 124 96 100 96C76 96 44 94 4 50Z" />
-        </clipPath>
-      </defs>
-      <g className="lidwrap">
-        <path
-          className="lid-line"
-          d="M4 50C44 6 76 4 100 4C124 4 156 6 196 50C156 94 124 96 100 96C76 96 44 94 4 50Z"
-        />
-        <g clipPath="url(#lids)">
-          <g className="gaze" ref={pupil}>
-            <circle className="iris" cx="100" cy="50" r="34" />
-            <circle className="ticks" cx="100" cy="50" r="28" />
-            <circle className="ring" cx="100" cy="50" r="20" />
-            <circle className="pupil" cx="100" cy="50" r="13" />
-            <circle className="glint" cx="106" cy="44" r="3.4" />
-          </g>
-        </g>
-      </g>
-    </svg>
+    <AuthFrame wince={!!error} footer={[`on ${window.location.host}`, "one more check before you're in"]}>
+      <form onSubmit={submit} noValidate>
+        <h1>
+          One more thing. <em>Prove it's you.</em>
+        </h1>
+        {usable ? (
+          <>
+            <p className="lsub">
+              Open your authenticator app and enter the 6 digit code. Lost your phone? A recovery code works too.
+            </p>
+            <label htmlFor="code">Code</label>
+            <input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              spellCheck={false}
+              className="lcode"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="000 000"
+            />
+            {error && (
+              <p className="form-err" role="alert">
+                {error}
+              </p>
+            )}
+            <button className="go" disabled={busy}>
+              {busy ? "Checking…" : "Verify"} <span aria-hidden="true">→</span>
+            </button>
+          </>
+        ) : (
+          <p className="form-err">
+            This account only has a security key set up, which the new app doesn't support yet. Sign in with the
+            classic app instead.
+          </p>
+        )}
+        <p className="lalt">
+          <button type="button" className="llink" onClick={onBack}>
+            ← Use a different account
+          </button>
+        </p>
+      </form>
+    </AuthFrame>
   );
 }
 
 export function Login() {
   const { status, login } = useAuth();
+  const settings = useSettings();
   const location = useLocation();
+  const { next, withNext } = useNext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [typingSecret, setTypingSecret] = useState(false);
+  const [mfa, setMfa] = useState<string[] | null>(null);
   const [lead, rest] = greeting(new Date().getHours());
 
-  if (status === "authed") {
-    const next = (location.state as { from?: string } | null)?.from ?? "/";
-    return <Navigate to={next} replace />;
-  }
+  const notice = (location.state as { notice?: string } | null)?.notice;
+
+  if (status === "authed") return <Navigate to={next} replace />;
+
+  if (mfa) return <SecondFactor types={mfa} onBack={() => setMfa(null)} />;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -93,67 +120,76 @@ export function Login() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(
-        err instanceof MfaRequiredError
-          ? "This account uses two-factor authentication, which the new app doesn't support yet. Sign in with the classic app."
-          : errorMessage(err),
-      );
+      if (err instanceof MfaRequiredError) setMfa(err.types);
+      else setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
   };
 
+  const open = settings.data?.enableUserRegistration;
+  const apps = settings.data?.socialApps ?? [];
+
   return (
-    <div className="login">
-      <WatchingEye shut={typingSecret} wince={!!error} />
+    <AuthFrame
+      shut={typingSecret}
+      wince={!!error}
+      footer={[`signing in to ${window.location.host}`, "eyes shut while you type a password"]}
+    >
+      <form onSubmit={submit} noValidate>
+        <h1>
+          {lead} <em>{rest}</em>
+        </h1>
 
-      <header className="lhead">
-        <Logo />
-      </header>
+        {notice && (
+          <p className="form-ok" role="status">
+            {notice}
+          </p>
+        )}
 
-      <main className="lmain">
-        <form onSubmit={submit} noValidate>
-          <h1>
-            {lead} <em>{rest}</em>
-          </h1>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          autoComplete="username"
+          autoFocus
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@company.com"
+        />
 
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="username"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-          />
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onFocus={() => setTypingSecret(true)}
+          onBlur={() => setTypingSecret(false)}
+        />
 
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => setTypingSecret(true)}
-            onBlur={() => setTypingSecret(false)}
-          />
+        {error && (
+          <p className="form-err" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="go" disabled={busy}>
+          {busy ? "Signing in…" : "Sign in"} <span aria-hidden="true">→</span>
+        </button>
 
-          {error && (
-            <p className="form-err" role="alert">
-              {error}
-            </p>
+        <p className="lalt">
+          <Link to="/forgot-password">Forgot your password?</Link>
+          {open && (
+            <>
+              <span aria-hidden="true">·</span>
+              <Link to={withNext("/signup")}>Create an account</Link>
+            </>
           )}
-          <button className="go" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"} <span aria-hidden="true">→</span>
-          </button>
-        </form>
-      </main>
+        </p>
 
-      <footer className="lfoot">
-        <span>signing in to {window.location.host}</span>
-        <span>eyes shut while you type a password</span>
-      </footer>
-    </div>
+        <SocialButtons apps={apps} next={next} />
+      </form>
+    </AuthFrame>
   );
 }

@@ -5,7 +5,12 @@ import { useOrganizations } from "./lib/queries";
 import { ComingSoon } from "./pages/ComingSoon";
 import { IssueDetail } from "./pages/IssueDetail";
 import { Issues } from "./pages/Issues";
+import { AcceptInvite } from "./pages/AcceptInvite";
+import { ForgotPassword } from "./pages/ForgotPassword";
 import { Login } from "./pages/Login";
+import { Onboarding } from "./pages/Onboarding";
+import { ResetPassword } from "./pages/ResetPassword";
+import { Signup } from "./pages/Signup";
 import { MonitorDetail } from "./pages/MonitorDetail";
 import { Performance } from "./pages/Performance";
 import { TransactionDetail } from "./pages/TransactionDetail";
@@ -35,7 +40,7 @@ function Home() {
   const orgs = useOrganizations();
   if (orgs.isLoading) return <Splash />;
   const first = orgs.data?.[0];
-  if (!first) return <Splash>No organization yet. Create one in the classic app.</Splash>;
+  if (!first) return <Onboarding />;
   return <Navigate to={`/${first.slug}/issues`} replace />;
 }
 
@@ -43,6 +48,11 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
+      <Route path="/reset-password/set-new-password/:key" element={<ResetPassword />} />
+      <Route path="/accept/:id/:token" element={<AcceptInvite />} />
       <Route
         path="/"
         element={

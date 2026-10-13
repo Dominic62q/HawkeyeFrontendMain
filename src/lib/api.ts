@@ -21,6 +21,7 @@ interface Options {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
   query?: Query;
+  headers?: Record<string, string>;
 }
 
 export interface ApiResponse<T> {
@@ -30,13 +31,13 @@ export interface ApiResponse<T> {
 
 export async function apiRaw<T>(
   path: string,
-  { method = "GET", body, query }: Options = {},
+  { method = "GET", body, query, headers: extra }: Options = {},
 ): Promise<ApiResponse<T>> {
   const url = new URL(path, window.location.origin);
   for (const [k, v] of Object.entries(query ?? {})) {
     if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
   }
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: "application/json", ...extra };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (method !== "GET") {
     const token = getCookie("csrftoken");
@@ -81,4 +82,20 @@ export function errorMessage(err: unknown): string {
     }
   }
   return "Something went wrong. Try again.";
+}
+
+/** Splits an allauth error body into per-field messages and everything else. */
+export function splitErrors(err: unknown): { form: string; fields: Record<string, string> } {
+  const fields: Record<string, string> = {};
+  let form = "";
+  if (err instanceof ApiError) {
+    const list = (err.body as { errors?: { message?: string; param?: string }[] } | null)?.errors;
+    for (const e of Array.isArray(list) ? list : []) {
+      if (!e.message) continue;
+      if (e.param) fields[e.param] ??= e.message;
+      else form ||= e.message;
+    }
+  }
+  if (!form && Object.keys(fields).length === 0) form = errorMessage(err);
+  return { form, fields };
 }
