@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { Shell } from "./components/Shell";
 import { useAuth } from "./lib/auth";
 import { useOrganizations } from "./lib/queries";
@@ -6,6 +6,7 @@ import { IssueDetail } from "./pages/IssueDetail";
 import { Issues } from "./pages/Issues";
 import { Logs } from "./pages/Logs";
 import { AcceptInvite } from "./pages/AcceptInvite";
+import { ConfirmEmail } from "./pages/ConfirmEmail";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Login } from "./pages/Login";
 import { Onboarding } from "./pages/Onboarding";
@@ -49,6 +50,18 @@ function Home() {
   return <Navigate to={`/${first.slug}/issues`} replace />;
 }
 
+/** Backend alert and email links use the classic app's `/uptime-monitors/:id`. */
+function MonitorRedirect() {
+  const { org = "", id = "" } = useParams();
+  return <Navigate to={`/${org}/uptime/${id}`} replace />;
+}
+
+/** Sentry-style `/:org/:project/issues/:id` links, which the classic app also accepts. */
+function SentryIssueRedirect() {
+  const { org = "", id = "" } = useParams();
+  return <Navigate to={`/${org}/issues/${id}`} replace />;
+}
+
 export function App() {
   return (
     <Routes>
@@ -58,6 +71,7 @@ export function App() {
       <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
       <Route path="/reset-password/set-new-password/:key" element={<ResetPassword />} />
       <Route path="/accept/:id/:token" element={<AcceptInvite />} />
+      <Route path="/profile/confirm-email/:key" element={<ConfirmEmail />} />
       <Route
         path="/"
         element={
@@ -77,8 +91,10 @@ export function App() {
         <Route index element={<Navigate to="issues" replace />} />
         <Route path="issues" element={<Issues />} />
         <Route path="issues/:id" element={<IssueDetail />} />
+        <Route path=":project/issues/:id" element={<SentryIssueRedirect />} />
         <Route path="uptime" element={<Uptime />} />
         <Route path="uptime/:id" element={<MonitorDetail />} />
+        <Route path="uptime-monitors/:id" element={<MonitorRedirect />} />
         <Route path="logs" element={<Logs />} />
         <Route path="performance" element={<Performance />} />
         <Route path="performance/:id" element={<TransactionDetail />} />
