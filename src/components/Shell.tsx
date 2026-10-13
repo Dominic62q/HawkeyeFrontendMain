@@ -6,7 +6,8 @@ import { useOrganizations, useProjects, useSettings } from "../lib/queries";
 import { useTheme } from "../lib/theme";
 import { Logo } from "./Logo";
 
-const BUG_REPORTS = "https://github.com/Dominic62q/HawkeyeFrontendMain/issues";
+const DOCS = "https://github.com/Dominic62q/HawkeyeFrontendMain#readme";
+const BUG_REPORTS ="https://github.com/Dominic62q/HawkeyeFrontendMain/issues";
 
 const TABS = [
   ["issues", "Issues"],
@@ -130,6 +131,15 @@ export function Shell() {
               >
                 Account
               </button>
+              <a
+                role="menuitem"
+                href={DOCS}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMenu(false)}
+              >
+                Documentation
+              </a>
               <a
                 role="menuitem"
                 href={BUG_REPORTS}
