@@ -312,6 +312,24 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .hb-note { color: var(--mute); font-size: 13.5px; margin: 0 0 10px; }
 .hb-code { display: block; padding: 10px 12px; border-radius: 8px; background: var(--code); font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
 
+/* performance */
+.phd, .prow { grid-template-columns: minmax(0, 1fr) 160px 72px 72px 84px 64px; }
+.tname { font-family: var(--mono); font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
+.num.soft { color: var(--mute); font-weight: 500; }
+.num.err.ok { color: var(--mute); font-weight: 500; }
+.num.err.warn { color: var(--warn); }
+.num.err.bad { color: var(--signal); }
+.lrange { position: relative; height: 8px; border-radius: 4px; background: var(--line2); overflow: hidden; }
+.lrange i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; }
+.lrange .lr-p95 { background: color-mix(in srgb, var(--ink) 28%, transparent); }
+.lrange .lr-p50 { background: var(--ink); }
+.mono-h { font-family: var(--mono) !important; font-weight: 600 !important; font-size: 24px !important; letter-spacing: -0.02em !important; }
+.spandesc { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 340px; }
+.spandesc .mono { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.share-h { width: 150px; }
+.share { width: 150px; }
+.share i { display: block; height: 8px; border-radius: 4px; background: var(--signal); min-width: 2px; }
+
 /* dialog + form */
 .dlg { padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); box-shadow: var(--shadow-pop); width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); margin: auto; }
 .dlg.narrow { width: min(420px, calc(100vw - 32px)); }
@@ -348,6 +366,10 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
   .strip > div:nth-child(2) { border-right: 0; }
   .strip > div:nth-child(-n + 2) { border-bottom: 1px solid var(--line2); }
   .dh h1 { font-size: 26px; }
+  .prow { grid-template-columns: minmax(0, 1fr) 64px; row-gap: 10px; padding: 12px 14px; }
+  .prow .lrange, .prow .num.soft, .prow .num.err { display: none; }
+  .prow .p50 { display: none; }
+  .mono-h { font-size: 19px !important; }
   .mrow { grid-template-columns: minmax(0, 1fr) auto; row-gap: 10px; padding: 12px 14px; }
   .mrow .mbars { grid-column: 1 / -1; grid-row: 2; }
   .mrow .num { display: none; }

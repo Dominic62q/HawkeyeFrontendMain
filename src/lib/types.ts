@@ -132,3 +132,37 @@ export interface MonitorInput {
   project: string | null;
   environmentId: number | null;
 }
+
+export interface TransactionGroup {
+  id: number;
+  project: number;
+  transaction: string;
+  op: string;
+  method: string;
+  count: number;
+  avgDuration: number;
+  p50: number | null;
+  p95: number | null;
+  errorCount: number;
+  errorRate: number;
+  throughput: number | null;
+  firstSeen: string;
+  lastSeen: string;
+}
+
+export interface SpanGroup {
+  op: string;
+  description: string;
+  count: number;
+  avgDuration: number;
+  p95Duration: number;
+  totalTime: number;
+}
+
+export interface TransactionTrendPoint {
+  date: string;
+  count: number;
+  transactionCount: number;
+  avgDuration: number;
+  totalTime: number;
+}

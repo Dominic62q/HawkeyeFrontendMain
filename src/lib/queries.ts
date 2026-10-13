@@ -10,6 +10,9 @@ import type {
   MonitorInput,
   Organization,
   Project,
+  SpanGroup,
+  TransactionGroup,
+  TransactionTrendPoint,
 } from "./types";
 
 export function useOrganizations() {
@@ -165,5 +168,39 @@ export function useDeleteMonitor(org: string) {
       qc.setQueriesData<Monitor[]>({ queryKey: ["monitors", org] }, (old) => old?.filter((m) => m.id !== id));
       qc.invalidateQueries({ queryKey: ["monitors", org] });
     },
+  });
+}
+
+export type TransactionSort = "-avg_duration" | "-count" | "-created";
+
+export function useTransactionGroups(org: string, sort: TransactionSort, project: string, query: string) {
+  return useQuery({
+    queryKey: ["transaction-groups", org, sort, project, query],
+    queryFn: () =>
+      api<TransactionGroup[]>(`/api/0/organizations/${org}/transaction-groups/`, {
+        query: { sort, project: project || undefined, query: query || undefined },
+      }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useTransactionGroup(org: string, id: string) {
+  return useQuery({
+    queryKey: ["transaction-group", org, id],
+    queryFn: () => api<TransactionGroup>(`/api/0/organizations/${org}/transaction-groups/${id}/`),
+  });
+}
+
+export function useTransactionTrend(org: string, id: string) {
+  return useQuery({
+    queryKey: ["transaction-trend", org, id],
+    queryFn: () => api<TransactionTrendPoint[]>(`/api/0/organizations/${org}/transaction-groups/${id}/trend/`),
+  });
+}
+
+export function useTransactionSpans(org: string, id: string) {
+  return useQuery({
+    queryKey: ["transaction-spans", org, id],
+    queryFn: () => api<SpanGroup[]>(`/api/0/organizations/${org}/transaction-groups/${id}/spans/`),
   });
 }
