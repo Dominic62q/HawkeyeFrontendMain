@@ -70,8 +70,8 @@ button:disabled { cursor: default; opacity: 0.55; }
 .menu { position: relative; }
 .menu-pop { position: absolute; right: 0; top: 42px; min-width: 220px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: var(--shadow-pop); }
 .menu-pop .who { padding: 8px 10px; font-size: 13px; color: var(--mute); border-bottom: 1px solid var(--line2); margin-bottom: 6px; word-break: break-all; }
-.menu-pop button { display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 6px; font-size: 14px; }
-.menu-pop button:hover { background: var(--line2); }
+.menu-pop button, .menu-pop a { display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 6px; font-size: 14px; }
+.menu-pop button:hover, .menu-pop a:hover { background: var(--line2); }
 .tabs { display: flex; gap: 24px; padding: 0 32px; background: var(--card); border-bottom: 1px solid var(--line); overflow-x: auto; position: sticky; top: 56px; z-index: 4; }
 .tabs a { padding: 10px 0 11px; color: var(--mute); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
 .tabs a:hover { color: var(--ink); }

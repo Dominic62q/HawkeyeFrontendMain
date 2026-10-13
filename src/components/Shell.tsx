@@ -6,6 +6,8 @@ import { useOrganizations, useProjects, useSettings } from "../lib/queries";
 import { useTheme } from "../lib/theme";
 import { Logo } from "./Logo";
 
+const BUG_REPORTS = "https://github.com/Dominic62q/HawkeyeFrontendMain/issues";
+
 const TABS = [
   ["issues", "Issues"],
   ["uptime", "Uptime"],
@@ -128,6 +130,15 @@ export function Shell() {
               >
                 Account
               </button>
+              <a
+                role="menuitem"
+                href={BUG_REPORTS}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMenu(false)}
+              >
+                Report a bug
+              </a>
               <button role="menuitem" onClick={() => void logout()}>
                 Sign out
               </button>
