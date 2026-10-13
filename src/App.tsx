@@ -1,0 +1,59 @@
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Shell } from "./components/Shell";
+import { useAuth } from "./lib/auth";
+import { useOrganizations } from "./lib/queries";
+import { ComingSoon } from "./pages/ComingSoon";
+import { IssueDetail } from "./pages/IssueDetail";
+import { Issues } from "./pages/Issues";
+import { Login } from "./pages/Login";
+
+function Splash({ children = "Loading…" }: { children?: string }) {
+  return <div className="splash">{children}</div>;
+}
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { status } = useAuth();
+  const location = useLocation();
+  if (status === "loading") return <Splash />;
+  if (status === "anon") {
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+  }
+  return <>{children}</>;
+}
+
+function Home() {
+  const orgs = useOrganizations();
+  if (orgs.isLoading) return <Splash />;
+  const first = orgs.data?.[0];
+  if (!first) return <Splash>No organization yet. Create one in the classic app.</Splash>;
+  return <Navigate to={`/${first.slug}/issues`} replace />;
+}
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <Home />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/:org"
+        element={
+          <RequireAuth>
+            <Shell />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<Navigate to="issues" replace />} />
+        <Route path="issues" element={<Issues />} />
+        <Route path="issues/:id" element={<IssueDetail />} />
+        <Route path=":section" element={<ComingSoon />} />
+      </Route>
+    </Routes>
+  );
+}

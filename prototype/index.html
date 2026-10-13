@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hawkeye — concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3efe6; --card:#fbf9f3; --ink:#14130f; --mute:#6e6a5e; --line:#d9d3c3; --line2:#ece7d9;
+  --signal:#e8431a; --signal-ink:#fff; --ok:#2f6b4f; --warn:#c98a00; --code:#ece7d9; --hl:#fde3d9;
+  --serif:'Fraunces',Georgia,serif; --sans:'Instrument Sans',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+:root[data-theme=night]{
+  --paper:#12110e; --card:#1a1915; --ink:#f1ecdf; --mute:#9a9484; --line:#2c2a23; --line2:#23211b;
+  --signal:#ff5a2e; --signal-ink:#14130f; --ok:#58b88a; --warn:#e6b43c; --code:#201e18; --hl:#3a1f16;
+}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.serif{font-family:var(--serif)} .mono{font-family:var(--mono)}
+.view{display:none} .view.on{display:block}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:20px;padding:14px 32px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:5}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:800;font-size:22px;letter-spacing:-.02em}
+.eye{width:26px;height:26px}
+.scope{display:flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--mute)}
+.scope b{color:var(--ink);font-weight:500}
+.cmd{flex:1;max-width:460px;display:flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--mute);font-size:14px}
+.cmd kbd{margin-left:auto;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.sp{flex:1}
+.ico{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:14px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-weight:600;font-size:13px}
+.tabs{display:flex;gap:28px;padding:0 32px;border-bottom:1px solid var(--line)}
+.tabs a{padding:12px 0;color:var(--mute);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--ink);border-color:var(--signal)}
+.wrap{max-width:1180px;margin:0 auto;padding:36px 32px 80px}
+
+/* horizon hero */
+.hero{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:40px;align-items:end;padding-bottom:28px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.big{font-family:var(--serif);font-weight:800;font-size:112px;line-height:.9;letter-spacing:-.04em;margin:8px 0 6px}
+.big small{font-size:22px;font-weight:600;letter-spacing:0;margin-left:10px;color:var(--mute)}
+.pulse{width:100%;height:150px}
+.pulse rect{fill:var(--ink)} .pulse rect.hot{fill:var(--signal)}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:6px}
+.row-ctl{display:flex;align-items:center;gap:10px;margin:26px 0 14px}
+.chip{padding:6px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:500;color:var(--mute)}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{padding:6px 14px;font-size:13px;color:var(--mute)} .seg button.on{background:var(--card);color:var(--ink);font-weight:600}
+
+/* issue rows */
+.issue{display:grid;grid-template-columns:6px minmax(0,1fr) 120px 90px 90px 80px;gap:20px;align-items:center;padding:20px 22px 20px 0;border-bottom:1px solid var(--line2);cursor:pointer;transition:background .15s}
+.issue:hover{background:var(--card)}
+.sev{align-self:stretch;border-radius:3px;background:var(--line)} .sev.err{background:var(--signal)} .sev.wrn{background:var(--warn)}
+.ititle{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:-.01em;line-height:1.25}
+.ititle span{font-weight:400;color:var(--mute)}
+.culprit{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-top:4px}
+.num{font-family:var(--serif);font-weight:600;font-size:28px;line-height:1;text-align:right}
+.num small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400;margin-top:5px}
+.spark{width:120px;height:38px}
+.spark polyline{fill:none;stroke:var(--ink);stroke-width:1.6}
+.age{font-size:12.5px;color:var(--mute);text-align:right}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--hl);color:var(--signal);margin-right:6px;vertical-align:2px}
+.note{font-family:var(--mono);font-size:11.5px;color:var(--mute);margin-top:22px}
+
+/* detail */
+.crumb{font-size:13px;color:var(--mute);margin-bottom:18px}.crumb a:hover{color:var(--ink)}
+.dh{display:flex;gap:32px;align-items:flex-start;justify-content:space-between;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.dh h1{font-family:var(--serif);font-weight:800;font-size:46px;line-height:1.05;letter-spacing:-.03em;max-width:720px}
+.dh p{color:var(--mute);margin-top:10px;max-width:640px}
+.acts{display:flex;gap:10px;flex-shrink:0}
+.btn{padding:10px 18px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:14px;background:var(--card)}
+.btn.pri{background:var(--signal);border-color:var(--signal);color:var(--signal-ink)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:44px;margin-top:30px}
+h3.sec{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:500;margin:0 0 14px}
+.trace{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.frame{padding:14px 18px;border-bottom:1px solid var(--line2);font-family:var(--mono);font-size:13px;display:flex;gap:14px;align-items:baseline}
+.frame:last-child{border:0}
+.frame .fn{font-weight:500}.frame .loc{color:var(--mute);margin-left:auto}
+.frame.cul{background:var(--hl);position:relative}.frame.cul:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--signal)}
+.src{background:var(--code);padding:14px 0;font-family:var(--mono);font-size:13px;border-bottom:1px solid var(--line2)}
+.src div{display:flex;gap:18px;padding:1px 18px;white-space:pre}.src i{font-style:normal;color:var(--mute);width:22px;text-align:right}
+.src .bad{background:var(--hl);font-weight:500}.src .bad i{color:var(--signal)}
+.panel{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:20px;margin-bottom:22px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:14px}.kv:last-child{border:0}
+.kv span:first-child{color:var(--mute)}
+.tl{position:relative;padding-left:20px}.tl:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:var(--line)}
+.tl div{position:relative;padding:5px 0;font-size:13.5px}.tl div:before{content:"";position:absolute;left:-20px;top:11px;width:9px;height:9px;border-radius:50%;background:var(--paper);border:1.5px solid var(--mute)}
+.tl div.x:before{background:var(--signal);border-color:var(--signal)}
+.tl small{display:block;font-family:var(--mono);font-size:11px;color:var(--mute)}
+
+/* login */
+.login{display:grid;grid-template-columns:1.15fr 1fr;min-height:100vh}
+.lhero{background:var(--ink);color:var(--paper);padding:56px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.lhero h2{font-family:var(--serif);font-weight:800;font-size:76px;line-height:.95;letter-spacing:-.04em;max-width:560px}
+.lhero h2 em{font-style:italic;font-weight:400;color:var(--signal)}
+.lhero p{max-width:420px;color:#b9b3a3;font-size:17px;margin-top:22px}
+.lhero .logo{color:var(--paper)}
+.rings{position:absolute;right:-180px;bottom:-180px;width:640px;height:640px;opacity:.9}
+.lform{display:flex;align-items:center;justify-content:center;padding:48px}
+.lform form{width:100%;max-width:360px}
+.lform h1{font-family:var(--serif);font-weight:800;font-size:38px;letter-spacing:-.03em;margin-bottom:6px}
+.lform .sub{color:var(--mute);margin-bottom:28px}
+label{display:block;font-size:13px;font-weight:600;margin:16px 0 6px}
+input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+input:focus{outline:2px solid var(--signal);outline-offset:1px}
+.lform .btn{width:100%;margin-top:22px;padding:13px}
+.lform .alt{margin-top:18px;font-size:13.5px;color:var(--mute);text-align:center}.lform .alt a{color:var(--ink);text-decoration:underline}
+
+.dock{position:fixed;right:18px;bottom:18px;display:flex;gap:8px;z-index:9}
+.dock button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;box-shadow:0 4px 16px #0002}
+@media(max-width:900px){.hero,.cols,.login{grid-template-columns:1fr}.issue{grid-template-columns:6px 1fr 70px}.issue .spark,.issue .age,.issue .hide{display:none}.big{font-size:80px}.lhero{min-height:46vh}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="eye" viewBox="0 0 100 100"><path d="M4 50C20 22 36 12 50 12C64 12 80 22 96 50C80 78 64 88 50 88C36 88 20 78 4 50Z" fill="none" stroke="currentColor" stroke-width="9" stroke-linejoin="round"/><circle cx="50" cy="50" r="20" fill="var(--signal)"/><circle cx="57" cy="43" r="6" fill="var(--paper)"/></symbol>
+</defs></svg>
+
+<!-- LOGIN -->
+<section class="view" id="v-login">
+  <div class="login">
+    <div class="lhero">
+      <div class="logo"><svg class="eye"><use href="#eye"/></svg>Hawkeye</div>
+      <div>
+        <h2>See what your code is <em>hiding.</em></h2>
+        <p>Every exception, every slow request, every site that goes dark — gathered in one calm place, ranked by what actually needs you.</p>
+      </div>
+      <div class="mono" style="font-size:12px;color:#8d8777">self-hosted · your data stays yours</div>
+      <svg class="rings" viewBox="0 0 640 640" fill="none" stroke="#f3efe6" stroke-opacity=".16"><circle cx="320" cy="320" r="100"/><circle cx="320" cy="320" r="170"/><circle cx="320" cy="320" r="240"/><circle cx="320" cy="320" r="310"/><circle cx="320" cy="320" r="26" fill="#e8431a" stroke="none"/></svg>
+    </div>
+    <div class="lform">
+      <form onsubmit="go('issues');return false">
+        <h1>Welcome back</h1>
+        <p class="sub">Sign in to your workspace.</p>
+        <label>Email</label><input type="email" value="test@example.com">
+        <label>Password</label><input type="password" value="••••••••••">
+        <button class="btn pri">Sign in</button>
+        <p class="alt">New here? <a href="#">Create an account</a> · <a href="#">Reset password</a></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- APP SHELL -->
+<div id="app" style="display:none">
+  <header class="bar">
+    <div class="logo"><svg class="eye"><use href="#eye"/></svg>Hawkeye</div>
+    <div class="scope"><b>org</b> / project <span>▾</span></div>
+    <div class="cmd">⌕ Search issues, or jump to…<kbd>⌘K</kbd></div>
+    <div class="sp"></div>
+    <div class="ico" title="Environment">dev</div>
+    <div class="av">TE</div>
+  </header>
+  <nav class="tabs"><a class="on" href="#" data-tab>Issues</a><a href="#" data-tab>Uptime</a><a href="#" data-tab>Performance</a><a href="#" data-tab>Logs</a><a href="#" data-tab>Releases</a><a href="#" data-tab>Settings</a></nav>
+
+  <!-- ISSUES -->
+  <section class="view" id="v-issues"><div class="wrap">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Unresolved right now</div>
+        <div class="big">3<small>issues</small></div>
+        <div style="color:var(--mute)">1 new in the last hour · 14 events today</div>
+      </div>
+      <div>
+        <svg class="pulse" id="pulse" viewBox="0 0 600 150" preserveAspectRatio="none"></svg>
+        <div class="axis"><span>24h ago</span><span>12h</span><span>now</span></div>
+      </div>
+    </div>
+    <div class="row-ctl">
+      <button class="chip on">Unresolved</button><button class="chip">Ignored</button><button class="chip">Resolved</button><button class="chip">All environments ▾</button>
+      <div class="seg"><button class="on">24h</button><button>14d</button></div>
+    </div>
+    <div id="list"></div>
+    <p class="note">Concept screen. The first issue is your real test event; the others are sample data to show density.</p>
+  </div></section>
+
+  <!-- DETAIL -->
+  <section class="view" id="v-detail"><div class="wrap">
+    <div class="crumb"><a href="#" onclick="go('issues');return false">Issues</a> / PROJECT-1</div>
+    <div class="dh">
+      <div>
+        <h1>ZeroDivisionError</h1>
+        <p>division by zero (Hawkeye test event)</p>
+      </div>
+      <div class="acts"><button class="btn">Ignore</button><button class="btn">Assign</button><button class="btn pri">Resolve</button></div>
+    </div>
+    <div class="cols">
+      <div>
+        <h3 class="sec">Where it broke</h3>
+        <div class="trace">
+          <div class="frame"><span class="fn">main()</span><span class="loc">app.py:12</span></div>
+          <div class="frame cul"><span class="fn">run()</span><span class="badge">culprit</span><span class="loc">app.py:5</span></div>
+          <div class="src">
+            <div><i>3</i>def run():</div><div><i>4</i>    total = 1</div><div class="bad"><i>5</i>    return total / 0</div><div><i>6</i></div>
+          </div>
+        </div>
+        <h3 class="sec" style="margin-top:34px">What led up to it</h3>
+        <div class="panel"><div class="tl">
+          <div><small>00:00.000</small>request started · GET /report</div>
+          <div><small>00:00.041</small>db query · 3 rows</div>
+          <div class="x"><small>00:00.058</small>ZeroDivisionError raised in run()</div>
+        </div></div>
+      </div>
+      <aside>
+        <div class="panel"><h3 class="sec">At a glance</h3>
+          <div class="kv"><span>Events</span><b>1</b></div><div class="kv"><span>Users hit</span><b>0</b></div>
+          <div class="kv"><span>First seen</span><b>1h ago</b></div><div class="kv"><span>Status</span><b style="color:var(--signal)">Unresolved</b></div>
+        </div>
+        <div class="panel"><h3 class="sec">Context</h3>
+          <div class="kv"><span>Environment</span><b>dev</b></div><div class="kv"><span>Release</span><b class="mono" style="font-size:13px">test@1.0.0</b></div>
+          <div class="kv"><span>Platform</span><b>python</b></div><div class="kv"><span>Logger</span><b class="mono" style="font-size:13px">manual-test</b></div>
+        </div>
+      </aside>
+    </div>
+  </div></section>
+</div>
+
+<div class="dock">
+  <button onclick="go('login')">Login</button><button onclick="go('issues')">Issues</button><button onclick="go('detail')">Issue detail</button><button id="theme">Night</button>
+</div>
+
+<script>
+const rows=[
+ {t:'ZeroDivisionError',m:'division by zero (Hawkeye test event)',c:'app.py in run',n:1,u:0,a:'1h ago',s:'err',sp:[0,0,0,0,0,1,0],real:1},
+ {t:'TypeError',m:"Cannot read properties of undefined (reading 'id')",c:'checkout/cart.ts in onSubmit',n:482,u:131,a:'4m ago',s:'err',sp:[2,5,3,9,14,22,40]},
+ {t:'TimeoutError',m:'upstream payments took longer than 5000ms',c:'services/billing.py in charge',n:57,u:21,a:'38m ago',s:'wrn',sp:[1,0,2,6,3,2,4]},
+];
+const list=document.getElementById('list');
+list.innerHTML=rows.map(r=>{
+  const max=Math.max(...r.sp,1),pts=r.sp.map((v,i)=>`${i*20},${36-(v/max)*32}`).join(' ');
+  return `<div class="issue" onclick="go('detail')"><div class="sev ${r.s}"></div>
+  <div><div class="ititle">${r.real?'<span class="badge">new</span>':''}${r.t} <span>${r.m}</span></div><div class="culprit">${r.c}</div></div>
+  <svg class="spark" viewBox="0 0 120 38"><polyline points="${pts}"/></svg>
+  <div class="num">${r.n}<small>events</small></div><div class="num hide">${r.u}<small>users</small></div><div class="age">${r.a}</div></div>`}).join('');
+const p=document.getElementById('pulse'),bars=[];
+for(let i=0;i<48;i++){const h=[2,3,2,4,2,3,5,2,3,2,6,3,2,4,3,2,2,5,4,3,7,4,3,2,3,2,4,9,5,3,2,6,4,3,12,8,5,4,3,6,10,14,9,6,18,24,34,52][i];
+ bars.push(`<rect class="${i>43?'hot':''}" x="${i*12.5+1}" y="${150-h*2.7}" width="9" height="${h*2.7}" rx="2"/>`)}
+p.innerHTML=bars.join('');
+const views={login:'v-login',issues:'v-issues',detail:'v-detail'};
+function go(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.getElementById(views[v]).classList.add('on');
+  document.getElementById('app').style.display=v==='login'?'none':'block';
+  scrollTo(0,0);location.hash=v;
+}
+document.querySelectorAll('[data-tab]').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('on'));a.classList.add('on')});
+const tb=document.getElementById('theme');
+tb.onclick=()=>{const n=document.documentElement.dataset.theme==='night';document.documentElement.dataset.theme=n?'paper':'night';tb.textContent=n?'Night':'Paper'};
+go((location.hash||'#login').slice(1)in views?(location.hash||'#login').slice(1):'login');
+</script>
+</body>
+</html>
