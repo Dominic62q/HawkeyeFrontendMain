@@ -15,6 +15,11 @@ import { MonitorDetail } from "./pages/MonitorDetail";
 import { Performance } from "./pages/Performance";
 import { TransactionDetail } from "./pages/TransactionDetail";
 import { Uptime } from "./pages/Uptime";
+import { AccountLayout } from "./pages/account/AccountLayout";
+import { Emails } from "./pages/account/Emails";
+import { Profile } from "./pages/account/Profile";
+import { Security } from "./pages/account/Security";
+import { Tokens } from "./pages/account/Tokens";
 import { General } from "./pages/settings/General";
 import { Members } from "./pages/settings/Members";
 import { Teams } from "./pages/settings/Teams";
@@ -83,6 +88,13 @@ export function App() {
           <Route path="projects/:slug" element={<ProjectSettings />} />
           <Route path="members" element={<Members />} />
           <Route path="teams" element={<Teams />} />
+        </Route>
+        <Route path="account" element={<AccountLayout />}>
+          <Route index element={<Navigate to="profile" replace />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="emails" element={<Emails />} />
+          <Route path="security" element={<Security />} />
+          <Route path="tokens" element={<Tokens />} />
         </Route>
         <Route path=":section" element={<ComingSoon />} />
       </Route>

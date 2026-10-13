@@ -267,6 +267,20 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .watcher.wince .pupil { transform: scale(.55); }
 .watcher .glint { fill: var(--paper); }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.04); } }
+/* account */
+.stack { display: grid; gap: 22px; }
+.subrow { display: grid; gap: 12px; padding-top: 16px; margin-top: 4px; border-top: 1px solid var(--line2); }
+.codes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.codes code { padding: 8px 12px; border-radius: 8px; background: var(--code); font-family: var(--mono); font-size: 13px; text-align: center; user-select: all; }
+.qrbox { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.qrbox img { border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+.qrbox > div { flex: 1; min-width: 200px; }
+.scopes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+.scope-group { display: grid; gap: 6px; align-content: start; }
+.scope-group b { font-size: 13px; }
+.scope-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tokrow .dsn code { max-width: 420px; }
+
 @media (prefers-reduced-motion: reduce) { .watcher .lidwrap { animation: none; } .watcher .gaze, .login .go { transition: none; } }
 
 .splash { min-height: 100vh; display: grid; place-items: center; color: var(--mute); font-family: var(--mono); font-size: 13px; }
@@ -473,3 +487,5 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
   .watcher { right: -40vw; top: 26%; width: 150vw; opacity: .22; }
   .lmain h1 { margin-bottom: 28px; }
 }
+.qrbox .dsn code { white-space: normal; word-break: break-all; overflow-x: visible; }
+.stack > .shead-row + .hint, .stack > .shead + .hint { margin-top: -12px; }

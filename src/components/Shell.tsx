@@ -117,6 +117,15 @@ export function Shell() {
           {menu && (
             <div className="menu-pop" role="menu">
               <div className="who">{user?.email}</div>
+              <button
+                role="menuitem"
+                onClick={() => {
+                  setMenu(false);
+                  navigate(`/${org}/account/profile`);
+                }}
+              >
+                Account
+              </button>
               <button role="menuitem" onClick={() => void logout()}>
                 Sign out
               </button>
