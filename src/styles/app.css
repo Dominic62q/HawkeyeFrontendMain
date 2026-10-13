@@ -161,23 +161,36 @@ h3.sec { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.12em; te
 .st-ignored { color: var(--mute); }
 
 /* login */
-.login { display: grid; grid-template-columns: 1.15fr 1fr; min-height: 100vh; }
-.lhero { background: #14130f; color: #f3efe6; padding: 56px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
-.lhero h2 { font-family: var(--serif); font-weight: 800; font-size: 76px; line-height: 0.95; letter-spacing: -0.04em; max-width: 560px; }
-.lhero h2 em { font-style: italic; font-weight: 400; color: #e8431a; }
-.lhero p { max-width: 420px; color: #b9b3a3; font-size: 17px; margin-top: 22px; }
-.lhero .foot { font-family: var(--mono); font-size: 12px; color: #8d8777; }
-.lhero .eye-wrap { --paper: #14130f; color: #f3efe6; }
-.rings { position: absolute; right: -180px; bottom: -180px; width: 640px; height: 640px; }
-.lform { display: flex; align-items: center; justify-content: center; padding: 48px; }
-.lform form { width: 100%; max-width: 360px; }
-.lform h1 { font-family: var(--serif); font-weight: 800; font-size: 38px; letter-spacing: -0.03em; margin-bottom: 6px; }
-.lform .sub { color: var(--mute); margin-bottom: 28px; }
-label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
-input[type="email"], input[type="password"], input[type="text"] { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; }
-.lform .btn { width: 100%; margin-top: 22px; padding: 13px; }
-.lform .alt { margin-top: 18px; font-size: 13.5px; color: var(--mute); text-align: center; }
-.lform .form-err { margin-top: 16px; color: var(--signal); font-size: 14px; }
+.login { position: relative; min-height: 100vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; padding: 32px 56px; }
+.login > :not(.watcher) { position: relative; z-index: 1; }
+.lmain { display: flex; align-items: center; }
+.lmain form { width: 100%; max-width: 400px; }
+.lmain h1 { font-family: var(--serif); font-weight: 800; font-size: clamp(40px, 5vw, 64px); line-height: 1; letter-spacing: -0.04em; margin-bottom: 44px; }
+.lmain h1 em { display: block; font-style: italic; font-weight: 400; color: var(--signal); }
+.lfoot { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; color: var(--mute); }
+.login label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); margin: 26px 0 0; }
+.login input { width: 100%; padding: 10px 0 12px; border: 0; border-bottom: 1.5px solid var(--ink); border-radius: 0; background: transparent; color: var(--ink); font: inherit; font-size: 18px; outline: none; transition: border-color .15s, box-shadow .15s; }
+.login input::placeholder { color: var(--line); }
+.login input:focus { border-bottom-color: var(--signal); box-shadow: 0 1.5px 0 var(--signal); }
+.login .go { width: 100%; margin-top: 36px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border: 0; border-radius: 999px; background: var(--signal); color: var(--signal-ink); font: inherit; font-weight: 600; font-size: 16px; cursor: pointer; transition: transform .15s, filter .15s; }
+.login .go:hover:not(:disabled) { filter: brightness(1.06); transform: translateX(3px); }
+.login .go:disabled { opacity: .6; cursor: wait; }
+.login .form-err { margin-top: 20px; color: var(--signal); font-size: 14px; }
+
+/* the watching eye */
+.watcher { position: absolute; z-index: 0; right: -9vw; top: 50%; width: min(66vw, 1000px); transform: translateY(-50%); overflow: visible; }
+.watcher .lidwrap { transform-box: fill-box; transform-origin: center; animation: blink 7s infinite; transition: transform .35s cubic-bezier(.5, 0, .2, 1); }
+.watcher.shut .lidwrap { animation: none; transform: scaleY(.04); }
+.watcher .lid-line { fill: none; stroke: var(--ink); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.watcher .gaze { transition: transform .18s ease-out; }
+.watcher .iris { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.watcher .ticks { fill: none; stroke: var(--ink); stroke-width: 5; stroke-dasharray: .7 2.3; opacity: .55; }
+.watcher .ring { fill: none; stroke: var(--ink); stroke-width: .8; vector-effect: non-scaling-stroke; opacity: .5; }
+.watcher .pupil { fill: var(--signal); transform-box: fill-box; transform-origin: center; transition: transform .25s; }
+.watcher.wince .pupil { transform: scale(.55); }
+.watcher .glint { fill: var(--paper); }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.04); } }
+@media (prefers-reduced-motion: reduce) { .watcher .lidwrap { animation: none; } .watcher .gaze, .login .go { transition: none; } }
 
 .splash { min-height: 100vh; display: grid; place-items: center; color: var(--mute); font-family: var(--mono); font-size: 13px; }
 
@@ -185,11 +198,12 @@ input[type="email"], input[type="password"], input[type="text"] { width: 100%; p
   .bar { padding: 12px 16px; gap: 10px; flex-wrap: wrap; }
   .cmd { order: 5; max-width: none; flex-basis: 100%; }
   .tabs, .wrap { padding-left: 16px; padding-right: 16px; }
-  .hero, .cols, .login { grid-template-columns: 1fr; }
+  .hero, .cols { grid-template-columns: 1fr; }
   .issue { grid-template-columns: 6px 1fr 70px; gap: 12px; }
   .issue .spark, .issue .age, .issue .hide { display: none; }
   .big { font-size: 80px; }
   .dh h1 { font-size: 34px; }
-  .lhero { min-height: 46vh; padding: 32px; }
-  .lhero h2 { font-size: 48px; }
+  .login { padding: 20px 20px 24px; }
+  .watcher { right: -40vw; top: 26%; width: 150vw; opacity: .22; }
+  .lmain h1 { margin-bottom: 28px; }
 }
