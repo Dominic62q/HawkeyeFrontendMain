@@ -11,6 +11,8 @@ import { Performance } from "./pages/Performance";
 import { TransactionDetail } from "./pages/TransactionDetail";
 import { Uptime } from "./pages/Uptime";
 import { General } from "./pages/settings/General";
+import { Members } from "./pages/settings/Members";
+import { Teams } from "./pages/settings/Teams";
 import { ProjectSettings } from "./pages/settings/ProjectSettings";
 import { Projects } from "./pages/settings/Projects";
 import { SettingsLayout } from "./pages/settings/SettingsLayout";
@@ -69,6 +71,8 @@ export function App() {
           <Route path="general" element={<General />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/:slug" element={<ProjectSettings />} />
+          <Route path="members" element={<Members />} />
+          <Route path="teams" element={<Teams />} />
         </Route>
         <Route path=":section" element={<ComingSoon />} />
       </Route>

@@ -363,6 +363,13 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .danger-zone { border-color: color-mix(in srgb, var(--signal) 35%, var(--line)); }
 .dz-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 
+.mem { grid-template-columns: 36px minmax(0, 1fr) 130px auto; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.memrole .ctl { height: 30px; font-size: 13px; width: 120px; }
+.memacts { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+.memerr { grid-column: 2 / -1; }
+.ititle .tag { font-size: 11px; }
+
 /* dialog + form */
 .dlg { padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); box-shadow: var(--shadow-pop); width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); margin: auto; }
 .dlg.narrow { width: min(420px, calc(100vw - 32px)); }
@@ -413,6 +420,8 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
   .srail a { white-space: nowrap; }
   .dsn { flex-direction: column; align-items: stretch; }
   .dz-row { flex-direction: column; align-items: flex-start; }
+  .mem { grid-template-columns: 36px minmax(0, 1fr); row-gap: 8px; }
+  .memrole, .memacts { grid-column: 2; justify-content: flex-start; }
   .rchart { padding-left: 38px; }
   .login { padding: 20px 20px 24px; }
   .watcher { right: -40vw; top: 26%; width: 150vw; opacity: .22; }
