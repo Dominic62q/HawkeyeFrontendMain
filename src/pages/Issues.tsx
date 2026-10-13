@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Pulse, Sparkline, eventPoints } from "../components/Charts";
+import { ConnectApp } from "../components/ConnectApp";
 import { compact, timeAgo, toMs } from "../lib/format";
 import {
   useBulkUpdateIssues,
   useEnvironments,
   useIssues,
+  useOrgProjects,
   useProjects,
   type IssueFilters,
   type IssueSort,
@@ -110,6 +112,7 @@ export function Issues() {
   const [params, setParams] = useSearchParams();
   const environments = useEnvironments(org);
   const projects = useProjects(org);
+  const orgProjects = useOrgProjects(org);
   const bulk = useBulkUpdateIssues(org);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -150,6 +153,9 @@ export function Issues() {
     null,
   );
   const projectName = projects.data?.find((p) => p.id === filters.project)?.name ?? "All projects";
+  // A project that has never received an event gets setup help instead of "All quiet".
+  const inView = (orgProjects.data ?? []).filter((p) => !filters.project || p.id === filters.project);
+  const waiting = inView.length > 0 && inView.every((p) => !p.firstEvent) && !q && !filters.environment ? inView[0] : null;
   const statusLabel = STATUSES.find((s) => s.id === filters.status)?.label.toLowerCase() ?? "";
 
   const toggle = (id: string) =>
@@ -317,13 +323,14 @@ export function Issues() {
           )}
           {isLoading ? (
             <ListSkeleton />
+          ) : issues.length === 0 && waiting ? (
+            <div className="cpad">
+              <ConnectApp org={org} slug={waiting.slug} platform={waiting.platform} title="Waiting for your first event" />
+            </div>
           ) : issues.length === 0 ? (
             <div className="empty">
               <h2>All quiet</h2>
-              <p>
-                No {filters.status === "all" ? "" : statusLabel + " "}issues match this view. Point an SDK at
-                your project’s DSN and errors will show up here.
-              </p>
+              <p>No {filters.status === "all" ? "" : statusLabel + " "}issues match this view.</p>
             </div>
           ) : (
             issues.map((i) => (

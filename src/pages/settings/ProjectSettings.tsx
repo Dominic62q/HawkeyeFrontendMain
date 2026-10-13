@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { ConnectApp } from "../../components/ConnectApp";
 import { CopyButton } from "../../components/Copy";
 import { Dialog } from "../../components/Dialog";
 import { errorMessage } from "../../lib/api";
@@ -287,6 +288,7 @@ export function ProjectSettings() {
       <h2 className="shead">{project.name}</h2>
       <div className="sstack">
         <Keys org={org} slug={slug} editable={editable} />
+        <ConnectApp org={org} slug={slug} platform={project.platform} />
         <ProjectAlerts org={org} slug={slug} editable={editable} admin={can(detail.data.access, "project:admin")} />
         <Details key={project.slug} project={project} org={org} editable={editable} />
         {can(detail.data.access, "project:admin") && <Danger project={project} org={org} />}
