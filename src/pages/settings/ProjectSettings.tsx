@@ -15,6 +15,7 @@ import {
 } from "../../lib/queries";
 import { PLATFORMS, can, platformLabel } from "../../lib/settings";
 import type { ProjectDetail, ProjectKey } from "../../lib/types";
+import { ProjectAlerts } from "./ProjectAlerts";
 
 function KeyCard({ k, org, slug, editable, last }: { k: ProjectKey; org: string; slug: string; editable: boolean; last: boolean }) {
   const remove = useDeleteKey(org, slug);
@@ -286,6 +287,7 @@ export function ProjectSettings() {
       <h2 className="shead">{project.name}</h2>
       <div className="sstack">
         <Keys org={org} slug={slug} editable={editable} />
+        <ProjectAlerts org={org} slug={slug} editable={editable} admin={can(detail.data.access, "project:admin")} />
         <Details key={project.slug} project={project} org={org} editable={editable} />
         {can(detail.data.access, "project:admin") && <Danger project={project} org={org} />}
       </div>

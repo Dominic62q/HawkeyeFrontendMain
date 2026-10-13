@@ -385,3 +385,48 @@ export function useAlerts(org: string, slug: string) {
     queryFn: () => api<ProjectAlert[]>(`/api/0/projects/${org}/${slug}/alerts/`),
   });
 }
+
+export interface AlertInput {
+  name: string;
+  quantity: number | null;
+  timespanMinutes: number | null;
+  uptime: boolean;
+  environments: string[];
+  alertRecipients: { recipientType: string; url: string; tagsToAdd: string[] }[];
+}
+
+export interface AlertTestResult {
+  recipientType: string;
+  status: "sent" | "error" | "skipped";
+  message: string | null;
+}
+
+export function useSaveAlert(org: string, slug: string, id?: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AlertInput) =>
+      api<ProjectAlert>(`/api/0/projects/${org}/${slug}/alerts/${id ? id + "/" : ""}`, {
+        method: id ? "PUT" : "POST",
+        body: input,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts", org, slug] }),
+  });
+}
+
+export function useDeleteAlert(org: string, slug: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api(`/api/0/projects/${org}/${slug}/alerts/${id}/`, { method: "DELETE" }),
+    onSuccess: (_, id) => {
+      qc.setQueryData<ProjectAlert[]>(["alerts", org, slug], (old) => old?.filter((a) => a.id !== id));
+      qc.invalidateQueries({ queryKey: ["alerts", org, slug] });
+    },
+  });
+}
+
+export function useTestAlert(org: string, slug: string) {
+  return useMutation({
+    mutationFn: (id: number) =>
+      api<AlertTestResult[]>(`/api/0/projects/${org}/${slug}/alerts/${id}/test/`, { method: "POST" }),
+  });
+}

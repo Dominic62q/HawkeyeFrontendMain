@@ -370,6 +370,26 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .memerr { grid-column: 2 / -1; }
 .ititle .tag { font-size: 11px; }
 
+.alertrow { padding: 14px 18px; border-bottom: 1px solid var(--line2); }
+.alertrow:last-child { border: 0; }
+.alerttop { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+.tag.env { background: var(--hl); color: var(--signal); }
+.testres { list-style: none; margin: 10px 0 0; padding: 0; font-size: 13px; display: grid; gap: 4px; }
+.testres .sent { color: var(--ok); }
+.testres .error { color: var(--signal); }
+.testres .skipped { color: var(--mute); }
+.fset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
+.fset legend { font-size: 13px; font-weight: 600; padding: 0; margin-bottom: 8px; }
+.chk { display: flex; gap: 10px; align-items: baseline; font-size: 14.5px; }
+.chk > input { accent-color: var(--signal); }
+.chk .mini { width: 56px; height: 30px; margin: 0 6px; padding: 0 8px; text-align: center; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font: inherit; }
+.chk .mini:disabled { opacity: .5; }
+.recip { display: flex; gap: 8px; align-items: center; }
+.recip select { height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; flex: none; width: 160px; }
+.recip input { flex: 1; min-width: 0; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; }
+.recip .grow-1 { flex: 1; }
+
 /* dialog + form */
 .dlg { padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); box-shadow: var(--shadow-pop); width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); margin: auto; }
 .dlg.narrow { width: min(420px, calc(100vw - 32px)); }
@@ -382,7 +402,9 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
 .dlg-text { color: var(--mute); font-size: 14.5px; margin: 0 0 4px; }
 .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
 .mform { display: grid; gap: 16px; }
-.fld { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
+.fld { display: block; font-size: 13px; font-weight: 600; }
+.fld > input, .fld > select { margin-top: 6px; }
+.fld > small { display: block; margin-top: 6px; }
 .fld small { font-weight: 400; color: var(--mute); font-size: 12.5px; }
 .fld .opt { font-weight: 400; color: var(--mute); font-size: 12px; margin-left: 4px; }
 .fld input, .fld select { height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-weight: 400; font-size: 14.5px; min-width: 0; width: 100%; }
@@ -421,6 +443,9 @@ h3.sec { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-
   .dsn { flex-direction: column; align-items: stretch; }
   .dz-row { flex-direction: column; align-items: flex-start; }
   .mem { grid-template-columns: 36px minmax(0, 1fr); row-gap: 8px; }
+  .recip { flex-wrap: wrap; }
+  .recip select { width: 100%; }
+  .alerttop { flex-direction: column; }
   .memrole, .memacts { grid-column: 2; justify-content: flex-start; }
   .rchart { padding-left: 38px; }
   .login { padding: 20px 20px 24px; }

@@ -42,3 +42,31 @@ export function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/** Recipient kinds the alert form can create. Zulip needs extra credentials, so it is left out. */
+export const RECIPIENTS: { id: string; label: string }[] = [
+  { id: "email", label: "Email" },
+  { id: "slack", label: "Slack" },
+  { id: "discord", label: "Discord" },
+  { id: "teams", label: "Microsoft Teams" },
+  { id: "googlechat", label: "Google Chat" },
+  { id: "ntfy", label: "ntfy" },
+  { id: "feishu", label: "Feishu (Lark)" },
+  { id: "webhook", label: "Generic webhook" },
+];
+
+export function recipientLabel(id: string): string {
+  if (id === "zulip") return "Zulip";
+  return RECIPIENTS.find((r) => r.id === id)?.label ?? id;
+}
+
+export function describeTrigger(a: { quantity: number | null; timespanMinutes: number | null; uptime: boolean }): string {
+  const parts: string[] = [];
+  if (a.quantity && a.timespanMinutes) {
+    parts.push(
+      `An issue gets ${a.quantity} ${a.quantity === 1 ? "event" : "events"} within ${a.timespanMinutes} ${a.timespanMinutes === 1 ? "minute" : "minutes"}`,
+    );
+  }
+  if (a.uptime) parts.push("An uptime check fails");
+  return parts.join(" · ") || "No trigger set";
+}
