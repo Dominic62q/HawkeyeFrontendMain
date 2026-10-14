@@ -1,5 +1,67 @@
 import { useEffect, useState } from "react";
+import { Dialog } from "../../components/Dialog";
+import { errorMessage } from "../../lib/api";
 import type { Page } from "./api";
+
+interface Mutation {
+  mutate: (value: boolean, options: { onSuccess: () => void }) => void;
+  isPending: boolean;
+  isError: boolean;
+  error: unknown;
+}
+
+/**
+ * A button that opens a confirmation before it changes anything.
+ * `value` is what the action will set, so the same component pauses and resumes.
+ */
+export function ConfirmAction({
+  label,
+  title,
+  text,
+  confirmLabel,
+  value,
+  mutation,
+  danger = false,
+}: {
+  label: string;
+  title: string;
+  text: string;
+  confirmLabel: string;
+  value: boolean;
+  mutation: Mutation;
+  danger?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button className={`btn sm${danger ? " danger" : ""}`} onClick={() => setOpen(true)}>
+        {label}
+      </button>
+      {open && (
+        <Dialog title={title} narrow onClose={() => setOpen(false)}>
+          <p className="dlg-text">{text}</p>
+          {mutation.isError && (
+            <p className="form-problem" role="alert">
+              {errorMessage(mutation.error)}
+            </p>
+          )}
+          <footer className="dlg-foot">
+            <button className="btn" onClick={() => setOpen(false)}>
+              Cancel
+            </button>
+            <button
+              className={`btn${danger ? " danger solid" : " pri"}`}
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate(value, { onSuccess: () => setOpen(false) })}
+            >
+              {mutation.isPending ? "Working…" : confirmLabel}
+            </button>
+          </footer>
+        </Dialog>
+      )}
+    </>
+  );
+}
 
 /** Search box that waits for a pause in typing before it updates the query. */
 export function useDebounced(value: string, ms = 250) {

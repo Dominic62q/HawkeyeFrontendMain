@@ -1,7 +1,34 @@
 import { useEffect, useState } from "react";
 import { timeAgo } from "../../lib/format";
-import { useOperatorUsers } from "./api";
-import { LoadError, Loading, Pager, useDebounced } from "./parts";
+import { useOperatorUsers, useSetUserActive, type UserRow } from "./api";
+import { ConfirmAction, LoadError, Loading, Pager, useDebounced } from "./parts";
+
+function UserControl({ u }: { u: UserRow }) {
+  const setActive = useSetUserActive(u.id);
+  const who = u.name || u.email;
+  // Superusers are deactivated in Django admin, after their flag is removed.
+  if (u.isSuperuser && u.isActive) return null;
+  return u.isActive ? (
+    <ConfirmAction
+      danger
+      label="Deactivate"
+      title={`Deactivate ${who}?`}
+      text={`${who} will be signed out and won't be able to sign in. Their API tokens stop working. Their organizations and data stay as they are.`}
+      confirmLabel="Deactivate"
+      value={false}
+      mutation={setActive}
+    />
+  ) : (
+    <ConfirmAction
+      label="Reactivate"
+      title={`Reactivate ${who}?`}
+      text={`${who} will be able to sign in again.`}
+      confirmLabel="Reactivate"
+      value={true}
+      mutation={setActive}
+    />
+  );
+}
 
 export function Users() {
   const [text, setText] = useState("");
@@ -43,6 +70,7 @@ export function Users() {
                   <th className="r">Organizations</th>
                   <th>Last sign-in</th>
                   <th>Joined</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -62,11 +90,14 @@ export function Users() {
                     <td className="r">{u.organizationCount}</td>
                     <td>{u.lastLogin ? timeAgo(u.lastLogin) : "never"}</td>
                     <td>{timeAgo(u.created)}</td>
+                    <td className="r">
+                      <UserControl u={u} />
+                    </td>
                   </tr>
                 ))}
                 {users.data.results.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="soft">
+                    <td colSpan={6} className="soft">
                       {q ? "No users match that search." : "No users yet."}
                     </td>
                   </tr>

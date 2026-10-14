@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 
 // Read-only operator metadata. The backend only answers an active superuser's session.
@@ -121,5 +121,31 @@ export function useOperatorUsers(q: string, page: number) {
     queryKey: ["operator", "users", q, page],
     queryFn: () => api<Page<UserRow>>("/api/0/operator/users/", { query: { q, page } }),
     placeholderData: keepPreviousData,
+  });
+}
+
+// ---- actions. Each one is confirmed in the UI and logged on the server.
+
+export function useSetIngest(orgId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (accepting: boolean) =>
+      api<{ isAcceptingEvents: boolean }>(`/api/0/operator/organizations/${orgId}/ingest/`, {
+        method: "POST",
+        body: { accepting },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["operator"] }),
+  });
+}
+
+export function useSetUserActive(userId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (active: boolean) =>
+      api<{ isActive: boolean }>(`/api/0/operator/users/${userId}/active/`, {
+        method: "POST",
+        body: { active },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["operator"] }),
   });
 }

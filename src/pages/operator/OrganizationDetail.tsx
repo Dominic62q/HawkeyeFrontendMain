@@ -1,8 +1,32 @@
 import { Link, useParams } from "react-router-dom";
 import { timeAgo } from "../../lib/format";
-import { useOperatorOrg } from "./api";
+import { useOperatorOrg, useSetIngest } from "./api";
 import { OrgStatus } from "./Organizations";
-import { Kpi, LoadError, Loading } from "./parts";
+import { ConfirmAction, Kpi, LoadError, Loading } from "./parts";
+
+function IngestControl({ id, name, accepting }: { id: number; name: string; accepting: boolean }) {
+  const setIngest = useSetIngest(id);
+  return accepting ? (
+    <ConfirmAction
+      danger
+      label="Pause ingest"
+      title={`Pause ${name}?`}
+      text={`Every incoming event for ${name} will be rejected until you resume. Their data and sign-in are not affected.`}
+      confirmLabel="Pause ingest"
+      value={false}
+      mutation={setIngest}
+    />
+  ) : (
+    <ConfirmAction
+      label="Resume ingest"
+      title={`Resume ${name}?`}
+      text={`${name} will start accepting events again. Projects that were blocked can take up to 30 seconds to recover.`}
+      confirmLabel="Resume ingest"
+      value={true}
+      mutation={setIngest}
+    />
+  );
+}
 
 function when(iso: string | null) {
   return iso ? new Date(iso).toLocaleDateString() : "";
@@ -30,7 +54,10 @@ export function OrganizationDetail() {
             <span className="mono">{o.slug}</span> · created {timeAgo(o.created)}
           </p>
         </div>
-        <OrgStatus o={o} />
+        <div className="toolbar" style={{ margin: 0 }}>
+          <OrgStatus o={o} />
+          <IngestControl id={o.id} name={o.name} accepting={o.isAcceptingEvents} />
+        </div>
       </div>
 
       <h2 className="op-section" style={{ marginTop: 8 }}>
