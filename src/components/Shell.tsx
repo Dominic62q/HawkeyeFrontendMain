@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useUser } from "../lib/account";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/format";
 import { useOrganizations, useProjects, useSettings } from "../lib/queries";
@@ -27,6 +28,7 @@ export function Shell() {
   const orgs = useOrganizations();
   const projects = useProjects(org);
   const features = useSettings().data?.enabledFeatures;
+  const isOperator = useUser().data?.isSuperuser === true;
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState(params.get("q") ?? "");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -131,6 +133,17 @@ export function Shell() {
               >
                 Account
               </button>
+              {isOperator && (
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setMenu(false);
+                    navigate("/operator");
+                  }}
+                >
+                  Operator console
+                </button>
+              )}
               <a
                 role="menuitem"
                 href={DOCS}

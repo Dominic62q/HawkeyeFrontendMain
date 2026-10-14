@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { Shell } from "./components/Shell";
 import { useAuth } from "./lib/auth";
@@ -27,6 +28,8 @@ import { Teams } from "./pages/settings/Teams";
 import { ProjectSettings } from "./pages/settings/ProjectSettings";
 import { Projects } from "./pages/settings/Projects";
 import { SettingsLayout } from "./pages/settings/SettingsLayout";
+
+const OperatorApp = lazy(() => import("./pages/operator/OperatorApp"));
 
 function Splash({ children = "Loading…" }: { children?: string }) {
   return <div className="splash">{children}</div>;
@@ -84,6 +87,16 @@ export function App() {
         element={
           <RequireAuth>
             <Home />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/operator/*"
+        element={
+          <RequireAuth>
+            <Suspense fallback={<Splash />}>
+              <OperatorApp />
+            </Suspense>
           </RequireAuth>
         }
       />

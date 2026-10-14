@@ -1,0 +1,44 @@
+/* Operator console. Loaded only with the /operator chunk, on top of app.css tokens. */
+
+.op-badge { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; background: var(--ink); color: var(--paper); }
+.op-back { font-size: 13px; color: var(--mute); }
+.op-back:hover { color: var(--ink); }
+
+.op-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.op-kpi { padding: 18px 20px; }
+.op-kpi b { display: block; font-family: var(--serif); font-weight: 700; font-size: 32px; line-height: 1.1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin-top: 6px; }
+.op-kpi b.hot { color: var(--signal); }
+.op-kpi small { display: block; color: var(--mute); font-size: 12.5px; margin-top: 2px; }
+
+.op-section { font-family: var(--serif); font-weight: 800; font-size: 20px; letter-spacing: -0.02em; margin: 28px 0 12px; }
+.op-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+
+.op-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.op-table th { text-align: left; font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); background: var(--paper); padding: 11px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.op-table td { padding: 12px 16px; border-bottom: 1px solid var(--line2); vertical-align: middle; }
+.op-table tr:last-child td { border-bottom: 0; }
+.op-table tbody tr:hover { background: var(--paper); }
+.op-table .r { text-align: right; font-variant-numeric: tabular-nums; }
+.op-table a.op-link { font-weight: 600; }
+.op-table a.op-link:hover { color: var(--signal); }
+.op-sub { display: block; color: var(--mute); font-size: 12.5px; margin-top: 1px; }
+.op-scroll { overflow-x: auto; }
+
+.op-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+.tag.bad { background: var(--hl); color: var(--signal); }
+
+.op-pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; margin-top: 12px; font-size: 13px; color: var(--mute); }
+
+.op-dl { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 10px 16px; padding: 18px 20px; font-size: 14px; }
+.op-dl dt { color: var(--mute); }
+.op-dl dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+.op-denied { max-width: 520px; margin: 96px auto; padding: 0 24px; text-align: center; }
+.op-denied h1 { font-family: var(--serif); font-weight: 800; font-size: 28px; letter-spacing: -0.03em; }
+.op-denied p { color: var(--mute); margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .op-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .op-grid { grid-template-columns: minmax(0, 1fr); }
+}

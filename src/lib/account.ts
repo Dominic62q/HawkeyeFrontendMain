@@ -28,6 +28,7 @@ export interface UserDetail {
   options: UserOptions;
   hasPasswordAuth: boolean;
   identities: UserIdentity[];
+  isSuperuser?: boolean;
   dateJoined: string;
   lastLogin: string | null;
 }
