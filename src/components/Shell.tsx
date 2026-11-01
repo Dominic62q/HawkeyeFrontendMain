@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth";
 import { initials } from "../lib/format";
 import { useOrganizations, useProjects, useSettings } from "../lib/queries";
 import { useTheme } from "../lib/theme";
+import { SearchIcon } from "./Icons";
 import { Logo } from "./Logo";
 
 const DOCS = "https://github.com/Dominic62q/HawkeyeFrontendMain#readme";
@@ -98,12 +99,12 @@ export function Shell() {
           </select>
         </div>
         <form className="cmd" onSubmit={search} role="search">
-          <span aria-hidden="true">⌕</span>
+          <SearchIcon />
           <input
             ref={searchRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search issues"
+            placeholder="Search"
             aria-label="Search issues"
           />
           <kbd>⌘K</kbd>

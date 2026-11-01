@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Dialog } from "../../components/Dialog";
+import { CloseIcon } from "../../components/Icons";
 import { errorMessage } from "../../lib/api";
 import {
   useAlerts,
@@ -168,7 +169,7 @@ function AlertDialog({
                 aria-label="Remove recipient"
                 onClick={() => setRecipients((rs) => rs.filter((_, j) => j !== i))}
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
           ))}

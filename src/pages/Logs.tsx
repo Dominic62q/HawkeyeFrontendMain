@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { CopyButton } from "../components/Copy";
+import { CloseIcon } from "../components/Icons";
 import { LogChart } from "../components/LogChart";
 import { compact, timeAgo } from "../lib/format";
 import {
@@ -312,7 +313,7 @@ export function Logs() {
           <span className="pill">
             Trace {filters.traceId.slice(0, 8)}…
             <button aria-label="Clear trace filter" onClick={() => set({ trace: "" })}>
-              ✕
+              <CloseIcon />
             </button>
           </span>
         </div>

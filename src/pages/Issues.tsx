@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Pulse, Sparkline, eventPoints } from "../components/Charts";
 import { ConnectApp } from "../components/ConnectApp";
+import { CloseIcon } from "../components/Icons";
 import { compact, timeAgo, toMs } from "../lib/format";
 import {
   useBulkUpdateIssues,
@@ -156,7 +157,8 @@ export function Issues() {
   // A project that has never received an event gets setup help instead of "All quiet".
   const inView = (orgProjects.data ?? []).filter((p) => !filters.project || p.id === filters.project);
   const waiting = inView.length > 0 && inView.every((p) => !p.firstEvent) && !q && !filters.environment ? inView[0] : null;
-  const statusLabel = STATUSES.find((s) => s.id === filters.status)?.label.toLowerCase() ?? "";
+  const statusTitle = STATUSES.find((s) => s.id === filters.status)?.label ?? "";
+  const statusLabel = statusTitle.toLowerCase();
 
   const toggle = (id: string) =>
     setSelected((cur) => {
@@ -193,7 +195,7 @@ export function Issues() {
       <section className="summary card" aria-label="Summary">
         <div className="stats">
           <div className="stat">
-            <span className="eyebrow">{filters.status === "all" ? "Issues" : statusLabel}</span>
+            <span className="eyebrow">{filters.status === "all" ? "Issues" : statusTitle}</span>
             <b>{data ? data.total : "–"}</b>
             <small>in this view</small>
           </div>
@@ -249,7 +251,7 @@ export function Issues() {
         </select>
         {q && (
           <button className="pill" onClick={() => set("q", "")} aria-label="Clear search">
-            “{q}” ✕
+            “{q}” <CloseIcon />
           </button>
         )}
         <select

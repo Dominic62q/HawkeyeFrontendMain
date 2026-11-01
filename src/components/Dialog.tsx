@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { CloseIcon } from "./Icons";
 
 /** A modal built on <dialog>, which gives focus trapping and Esc for free. */
 export function Dialog({
@@ -37,7 +38,7 @@ export function Dialog({
         <header className="dlg-head">
           <h2>{title}</h2>
           <button type="button" className="x" onClick={onClose} aria-label="Close">
-            ✕
+            <CloseIcon />
           </button>
         </header>
         {children}
