@@ -12,7 +12,7 @@ const SORTS: { id: TransactionSort; label: string }[] = [
   { id: "-created", label: "Newest" },
 ];
 
-function Row({ g, org, max }: { g: TransactionGroup; org: string; max: number }) {
+function Row({ g, org, max, projectName }: { g: TransactionGroup; org: string; max: number; projectName?: string }) {
   return (
     <div className="row prow">
       <div style={{ minWidth: 0 }}>
@@ -22,6 +22,7 @@ function Row({ g, org, max }: { g: TransactionGroup; org: string; max: number })
           </div>
         </Link>
         <div className="imeta">
+          {projectName && <span className="tag">{projectName}</span>}
           <span className="tag">{opLabel(g.op)}</span>
           <span>{compact(g.count)} requests</span>
           <span>· {timeAgo(g.lastSeen)}</span>
@@ -49,6 +50,7 @@ export function Performance() {
   const sum = totals(groups);
   const max = Math.max(0, ...groups.map((g) => g.p95 ?? 0));
   const projectName = projects.data?.find((p) => p.id === project)?.name ?? "All projects";
+  const projectOf = (id: number) => projects.data?.find((p) => Number(p.id) === id)?.name;
 
   const setSort = (value: string) => {
     const next = new URLSearchParams(params);
@@ -143,7 +145,7 @@ export function Performance() {
             <span className="r">Errors</span>
           </div>
           {groups.map((g) => (
-            <Row key={g.id} g={g} org={org} max={max} />
+            <Row key={g.id} g={g} org={org} max={max} projectName={!project ? projectOf(g.project) : undefined} />
           ))}
         </div>
       )}

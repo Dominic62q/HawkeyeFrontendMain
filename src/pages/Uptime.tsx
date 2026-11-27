@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { CheckBars } from "../components/UptimeCharts";
 import { MonitorForm } from "../components/MonitorForm";
 import { timeAgo } from "../lib/format";
-import { useMonitors, type MonitorSort } from "../lib/queries";
+import { useMonitors, useProjects, type MonitorSort } from "../lib/queries";
 import type { Monitor } from "../lib/types";
 import { MONITOR_TYPES, formatPct, span, stateOf, uptimePct } from "../lib/uptime";
 
@@ -30,7 +30,7 @@ function StateText({ m }: { m: Monitor }) {
   );
 }
 
-function Row({ m, org }: { m: Monitor; org: string }) {
+function Row({ m, org, showProject }: { m: Monitor; org: string; showProject: boolean }) {
   const state = stateOf(m);
   return (
     <div className="row mrow">
@@ -42,6 +42,7 @@ function Row({ m, org }: { m: Monitor; org: string }) {
           </div>
         </Link>
         <div className="imeta">
+          {showProject && m.projectName && <span className="tag">{m.projectName}</span>}
           <span className="tag">{typeLabel(m)}</span>
           <span className="culprit">{m.monitorType === "Heartbeat" ? "Waits for check-ins" : m.url}</span>
         </div>
@@ -60,10 +61,12 @@ function Row({ m, org }: { m: Monitor; org: string }) {
 export function Uptime() {
   const { org = "" } = useParams();
   const [params, setParams] = useSearchParams();
+  const project = params.get("project") ?? "";
   const sort = (SORTS.find((s) => s.id === params.get("sort"))?.id ?? "status") as MonitorSort;
   const view = (["down", "up"].includes(params.get("view") ?? "") ? params.get("view") : "all") as View;
   const [filter, setFilter] = useState("");
   const [creating, setCreating] = useState(false);
+  const projects = useProjects(org);
   const { data, error, isLoading, isPlaceholderData, refetch } = useMonitors(org, sort);
 
   const set = (key: string, value: string, fallback: string) => {
@@ -73,7 +76,8 @@ export function Uptime() {
     setParams(next);
   };
 
-  const monitors = data ?? [];
+  const projectName = projects.data?.find((p) => p.id === project)?.name ?? "All projects";
+  const monitors = (data ?? []).filter((m) => !project || m.projectID === project);
   const down = monitors.filter((m) => stateOf(m) === "down");
   const up = monitors.filter((m) => stateOf(m) === "up");
   const q = filter.trim().toLowerCase();
@@ -104,7 +108,7 @@ export function Uptime() {
         <div>
           <h1>Uptime</h1>
           <p className="psub">
-            {org} · {monitors.length} {monitors.length === 1 ? "monitor" : "monitors"}
+            {org} · {projectName} · {monitors.length} {monitors.length === 1 ? "monitor" : "monitors"}
           </p>
         </div>
         <button className="btn pri" onClick={() => setCreating(true)}>
@@ -206,7 +210,7 @@ export function Uptime() {
               <p>No monitors match this view.</p>
             </div>
           ) : (
-            shown.map((m) => <Row key={m.id} m={m} org={org} />)
+            shown.map((m) => <Row key={m.id} m={m} org={org} showProject={!project} />)
           )}
         </div>
       )}

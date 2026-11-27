@@ -47,12 +47,14 @@ function IssueRow({
   issue,
   org,
   period,
+  showProject,
   selected,
   onToggle,
 }: {
   issue: Issue;
   org: string;
   period: "24h" | "14d";
+  showProject: boolean;
   selected: boolean;
   onToggle: () => void;
 }) {
@@ -77,8 +79,9 @@ function IssueRow({
         </Link>
         <div className="imeta">
           <span className={`dot ${sev}`} title={issue.level} />
+          {showProject && <span className="tag">{issue.project.name}</span>}
           <span className="sid">{issue.shortId}</span>
-          <span className="culprit">{culpritOf(issue) || issue.project.name}</span>
+          {culpritOf(issue) && <span className="culprit">{culpritOf(issue)}</span>}
           {isNew && <span className="tag new">New</span>}
           {issue.status !== "unresolved" && (
             <span className={`tag ${issue.status === "resolved" ? "ok" : ""}`}>
@@ -341,6 +344,7 @@ export function Issues() {
                 issue={i}
                 org={org}
                 period={filters.period}
+                showProject={!filters.project}
                 selected={selected.has(i.id)}
                 onToggle={() => toggle(i.id)}
               />

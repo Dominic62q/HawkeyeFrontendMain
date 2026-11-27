@@ -89,6 +89,7 @@ function Row({
   open,
   query,
   project,
+  showProject,
   onToggle,
   narrow,
 }: {
@@ -96,16 +97,20 @@ function Row({
   open: boolean;
   query: string;
   project: string;
+  showProject: boolean;
   onToggle: () => void;
   narrow: Narrow;
 }) {
   const t = stamp(log.timestamp);
+  const svc = showProject ? (log.service ? `${project} · ${log.service}` : project) : log.service || "–";
   return (
     <>
       <button className={`lrow ${open ? "open" : ""}`} onClick={onToggle} aria-expanded={open}>
         <span className="ltime">{t.time}</span>
         <span className={`lvl lv-${log.level}`}>{log.level}</span>
-        <span className="lsvc">{log.service || "–"}</span>
+        <span className="lsvc" title={svc}>
+          {svc}
+        </span>
         <span className="lbody">{highlight(log.body, query)}</span>
       </button>
       {open && <Detail log={log} project={project} narrow={narrow} />}
@@ -375,6 +380,7 @@ export function Logs() {
                   open={open === log.id}
                   query={filters.query}
                   project={projectName(log.projectId)}
+                  showProject={!filters.project}
                   onToggle={() => setOpen(open === log.id ? null : log.id)}
                   narrow={narrow}
                 />

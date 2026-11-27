@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { openAssistant } from "../lib/assistant";
 import { timeAgo } from "../lib/format";
 import { useEvent, useIssue, useUpdateIssueStatus } from "../lib/queries";
 import type { Breadcrumb, EventEntry, ExceptionValue, IssueEvent, StackFrame } from "../lib/types";
@@ -149,6 +150,12 @@ export function IssueDetail() {
           {it.culprit && <div className="where">{it.culprit}</div>}
         </div>
         <div className="acts">
+          <button
+            className="btn"
+            onClick={() => openAssistant(`Explain issue ${it.shortId} (${it.metadata.type ?? it.title}) and suggest a fix.`)}
+          >
+            Explain with AI
+          </button>
           <button
             className="btn"
             disabled={update.isPending}

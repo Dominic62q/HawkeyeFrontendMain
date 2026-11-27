@@ -94,6 +94,20 @@ To monitor apps elsewhere, run the backend on a public address and set `GLITCHTI
 - Through an OpenTelemetry (OTLP) exporter, sending to the backend's `/v1/logs` endpoint with the
   project key in an `Authorization: Bearer <key>` header.
 
+## AI assistant
+
+The assistant sends chat messages and selected telemetry to the configured external AI provider.
+Organization administrators can disable it and control personal-data filtering in Settings → General.
+Credential and personal-data filtering is best effort, not a guarantee; review sensitive data before
+sharing it. Conversations are stored by the backend and can be deleted from assistant history.
+Configure the provider key on the backend, never in the frontend or browser. Confirm that the
+provider's terms and data-retention policies permit your intended use.
+
+Assistant answers stream as they are generated, with progress while telemetry is inspected.
+An interrupted answer is marked incomplete; check conversation history before retrying because a
+connection can fail after the backend saves a completed answer. Production reverse proxies must
+allow long-lived responses and disable buffering for the assistant chat endpoint.
+
 ## Project layout
 
 ```

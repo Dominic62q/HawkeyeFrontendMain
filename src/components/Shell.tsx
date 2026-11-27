@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../lib/account";
+import { getAssistantSettings, subscribeAssistantOpen } from "../lib/assistant";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/format";
 import { useOrganizations, useProjects, useSettings } from "../lib/queries";
 import { useTheme } from "../lib/theme";
+import { AssistantDrawer } from "./AssistantDrawer";
 import { SearchIcon } from "./Icons";
 import { Logo } from "./Logo";
 
@@ -30,7 +33,14 @@ export function Shell() {
   const projects = useProjects(org);
   const features = useSettings().data?.enabledFeatures;
   const isOperator = useUser().data?.isSuperuser === true;
+  const assistantCfg = useQuery({
+    queryKey: ["assistant-settings", org],
+    queryFn: () => getAssistantSettings(org),
+    enabled: Boolean(org),
+  });
+  const assistantEnabled = assistantCfg.data?.enabled !== false;
   const [menu, setMenu] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
   const [q, setQ] = useState(params.get("q") ?? "");
   const searchRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -41,13 +51,19 @@ export function Shell() {
         e.preventDefault();
         searchRef.current?.focus();
       }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setAssistantOpen((v) => !v);
+      }
     };
     const onClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false);
     };
+    const unsub = subscribeAssistantOpen(() => setAssistantOpen(true));
     window.addEventListener("keydown", onKey);
     window.addEventListener("click", onClick);
     return () => {
+      unsub();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);
     };
@@ -66,8 +82,10 @@ export function Shell() {
     const next = new URLSearchParams(params);
     if (id) next.set("project", id);
     else next.delete("project");
-    // Stay on the Logs page when switching project there; everything else lands on Issues.
-    navigate(`/${org}/${location.pathname.endsWith("/logs") ? "logs" : "issues"}?${next}`);
+    // Stay on the active section list when switching projects; detail/settings pages land on Issues.
+    const section = TABS.slice(0, 4).find(([slug]) => location.pathname === `/${org}/${slug}`)?.[0] ?? "issues";
+    const qs = next.toString();
+    navigate(`/${org}/${section}${qs ? `?${qs}` : ""}`);
   };
 
   return (
@@ -89,7 +107,12 @@ export function Shell() {
             ))}
           </select>
           /
-          <select aria-label="Project" value={project} onChange={(e) => setProject(e.target.value)}>
+          <select
+            aria-label="Project"
+            className={project ? "scoped" : undefined}
+            value={project}
+            onChange={(e) => setProject(e.target.value)}
+          >
             <option value="">all projects</option>
             {projects.data?.map((p) => (
               <option key={p.id} value={p.id}>
@@ -110,6 +133,18 @@ export function Shell() {
           <kbd>⌘K</kbd>
         </form>
         <div className="sp" />
+        {assistantEnabled && (
+          <button
+            className={`ai-trigger ${assistantOpen ? "on" : ""}`}
+            onClick={() => setAssistantOpen((v) => !v)}
+            aria-label="Toggle Hawkeye Assistant"
+            aria-expanded={assistantOpen}
+          >
+            <span className="ai-dot" aria-hidden="true" />
+            <span>Ask AI</span>
+            <kbd>⌘J</kbd>
+          </button>
+        )}
         <button className="icon-btn" onClick={toggle} aria-label="Switch theme">
           {theme === "paper" ? "Night" : "Paper"}
         </button>
@@ -172,13 +207,25 @@ export function Shell() {
       </header>
       <nav className="tabs" aria-label="Sections">
         {/* Logs and Uptime only exist when the server has them switched on. */}
-        {TABS.filter(([slug]) => !(slug === "logs" || slug === "uptime") || !features || features.includes(slug)).map(([slug, label]) => (
-          <NavLink key={slug} to={`/${org}/${slug}`} className={({ isActive }) => (isActive ? "on" : "")}>
-            {label}
-          </NavLink>
-        ))}
+        {TABS.filter(([slug]) => !(slug === "logs" || slug === "uptime") || !features || features.includes(slug)).map(([slug, label]) => {
+          const qs = project ? `?project=${encodeURIComponent(project)}` : "";
+          return (
+            <NavLink key={slug} to={`/${org}/${slug}${qs}`} className={({ isActive }) => (isActive ? "on" : "")}>
+              {label}
+            </NavLink>
+          );
+        })}
       </nav>
       <Outlet />
+      {assistantEnabled && (
+        <AssistantDrawer
+          open={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
+          org={org}
+          project={project}
+          projectName={projects.data?.find((p) => p.id === project)?.name ?? "All projects"}
+        />
+      )}
     </>
   );
 }
