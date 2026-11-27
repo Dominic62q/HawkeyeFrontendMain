@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { errorMessage } from "../../lib/api";
+import { getAssistantSettings, updateAssistantSettings } from "../../lib/assistant";
 import { timeAgo } from "../../lib/format";
 import { useOrgDetail, useUpdateOrg } from "../../lib/queries";
 import { can } from "../../lib/settings";
@@ -9,6 +11,18 @@ export function General() {
   const { org = "" } = useParams();
   const detail = useOrgDetail(org);
   const update = useUpdateOrg(org);
+  const qc = useQueryClient();
+  const aiCfg = useQuery({
+    queryKey: ["assistant-settings", org],
+    queryFn: () => getAssistantSettings(org),
+    enabled: Boolean(org),
+  });
+  const saveAi = useMutation({
+    mutationFn: (next: { enabled: boolean; scrubPii: boolean }) => updateAssistantSettings(org, next),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["assistant-settings", org] });
+    },
+  });
   const [name, setName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -75,6 +89,48 @@ export function General() {
           )}
         </div>
       </form>
+
+      {aiCfg.data && (
+        <>
+          <h2 className="shead" style={{ marginTop: 28 }}>
+            AI Assistant
+          </h2>
+          <div className="card sform">
+            <label className="kv" style={{ cursor: editable ? "pointer" : "default" }}>
+              <span>Enable AI Assistant for {o.name}</span>
+              <input
+                type="checkbox"
+                checked={aiCfg.data.enabled}
+                disabled={!editable || saveAi.isPending}
+                onChange={(e) =>
+                  saveAi.mutate({
+                    enabled: e.target.checked,
+                    scrubPii: aiCfg.data.scrubPii,
+                  })
+                }
+              />
+            </label>
+            <label className="kv" style={{ cursor: editable ? "pointer" : "default" }}>
+              <span>Reduce personal data sent with telemetry</span>
+              <input
+                type="checkbox"
+                checked={aiCfg.data.scrubPii}
+                disabled={!editable || saveAi.isPending || !aiCfg.data.enabled}
+                onChange={(e) =>
+                  saveAi.mutate({
+                    enabled: aiCfg.data.enabled,
+                    scrubPii: e.target.checked,
+                  })
+                }
+              />
+            </label>
+            <p className="hint">
+              The assistant sends selected telemetry and your messages to an external AI provider.
+              Sensitive data is filtered on a best-effort basis; review what you share.
+            </p>
+          </div>
+        </>
+      )}
     </>
   );
 }

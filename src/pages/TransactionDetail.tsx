@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { TrendChart } from "../components/PerfCharts";
+import { openAssistant } from "../lib/assistant";
 import { compact, timeAgo } from "../lib/format";
 import { errorTone, fmtDuration, fmtErrorRate, fmtRate, opLabel } from "../lib/performance";
 import { useProjects, useTransactionGroup, useTransactionSpans, useTransactionTrend } from "../lib/queries";
@@ -50,6 +51,18 @@ export function TransactionDetail() {
           <div className="where">
             {project ?? "Project"} · last seen {timeAgo(g.lastSeen)}
           </div>
+        </div>
+        <div className="acts">
+          <button
+            className="btn"
+            onClick={() =>
+              openAssistant(
+                `Analyze transaction "${g.transaction}" (p50 ${fmtDuration(g.p50)}, p95 ${fmtDuration(g.p95)}) and check for N+1 queries.`,
+              )
+            }
+          >
+            Analyze with AI
+          </button>
         </div>
       </div>
 
