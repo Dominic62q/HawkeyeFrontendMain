@@ -67,7 +67,7 @@ export function Uptime() {
   const [filter, setFilter] = useState("");
   const [creating, setCreating] = useState(false);
   const projects = useProjects(org);
-  const { data, error, isLoading, isPlaceholderData, refetch } = useMonitors(org, sort);
+  const { data, error, isLoading, isPlaceholderData, refetch } = useMonitors(org, sort, project);
 
   const set = (key: string, value: string, fallback: string) => {
     const next = new URLSearchParams(params);
@@ -77,7 +77,7 @@ export function Uptime() {
   };
 
   const projectName = projects.data?.find((p) => p.id === project)?.name ?? "All projects";
-  const monitors = (data ?? []).filter((m) => !project || m.projectID === project);
+  const monitors = data ?? [];
   const down = monitors.filter((m) => stateOf(m) === "down");
   const up = monitors.filter((m) => stateOf(m) === "up");
   const q = filter.trim().toLowerCase();

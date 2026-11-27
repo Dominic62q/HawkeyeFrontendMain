@@ -19,8 +19,9 @@ export function General() {
   });
   const saveAi = useMutation({
     mutationFn: (next: { enabled: boolean; scrubPii: boolean }) => updateAssistantSettings(org, next),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["assistant-settings", org] });
+    // Write the saved values straight into the cache so the next toggle never reads stale ones.
+    onSuccess: (saved) => {
+      qc.setQueryData(["assistant-settings", org], saved);
     },
   });
   const [name, setName] = useState<string | null>(null);

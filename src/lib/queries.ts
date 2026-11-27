@@ -125,10 +125,13 @@ export type MonitorSort = "status" | "name" | "-created";
 const LIVE = 15_000;
 
 /** Monitors with their 60 most recent checks; refreshes on its own like a status board should. */
-export function useMonitors(org: string, sort: MonitorSort) {
+export function useMonitors(org: string, sort: MonitorSort, project = "") {
   return useQuery({
-    queryKey: ["monitors", org, sort],
-    queryFn: () => api<Monitor[]>(`/api/0/organizations/${org}/monitors/`, { query: { sort, limit: 100 } }),
+    queryKey: ["monitors", org, sort, project],
+    queryFn: () =>
+      api<Monitor[]>(`/api/0/organizations/${org}/monitors/`, {
+        query: { sort, limit: 100, ...(project ? { project } : {}) },
+      }),
     refetchInterval: LIVE,
     placeholderData: keepPreviousData,
   });
