@@ -419,9 +419,10 @@ function AssistantDrawerForOrg({ open, onClose, org, project, projectName }: Pro
 
   useEffect(() => {
     return subscribeAssistantOpen((prompt) => {
-      if (prompt) {
-        void submitPrompt(prompt);
-      }
+      if (!prompt) return;
+      // While another request runs, leave the prompt in the composer instead of dropping it.
+      if (requestCount.current || (orgActivity.get(org) ?? 0) > 0) setInput(prompt);
+      else void submitPrompt(prompt);
     });
   });
 
